@@ -1,5 +1,7 @@
 # CoC Upgrade Timer
 
+**Preface: All of this is vibe coded using Claude Code.**
+
 A small Clash of Clans upgrade calculator and tracker built with [Avalonia UI](https://avaloniaui.net/) (.NET).
 Runs on Windows, Linux, macOS and Android.
 
@@ -148,10 +150,3 @@ scripts/build-release.sh   builds all release files
 
 Tracked upgrades are saved as JSON in the user config folder
 (`~/.config/CocTimeManager/upgrades.json` on Linux, `%APPDATA%\CocTimeManager\upgrades.json` on Windows).
-
-## Credits
-
-- Made by tmk, with help from Claude (Anthropic)
-- UI font: [Maple Mono](https://github.com/subframe7536/maple-font), SIL Open Font License 1.1 (see `CocTimeManager/fonts/OFL.txt`)
-- Clash of Clans and its artwork are trademarks of Supercell. This is an unofficial fan project, not affiliated with,
-  endorsed, sponsored or approved by Supercell. See [Supercell's Fan Content Policy](https://supercell.com/en/fan-content-policy/).
