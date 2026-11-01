@@ -11,5 +11,7 @@ fi
 rm -rf "$app_dir"
 rm -f "$bin_dir/coc-upgrade-timer" "$share/applications/coc-upgrade-timer.desktop" \
       "$share/icons/hicolor/256x256/apps/coc-upgrade-timer.png"
+# Start-at-login entry written by the app (always per user).
+rm -f "${XDG_CONFIG_HOME:-$HOME/.config}/autostart/coc-upgrade-timer.desktop"
 command -v update-desktop-database >/dev/null && update-desktop-database -q "$share/applications" || true
 echo "Uninstalled."

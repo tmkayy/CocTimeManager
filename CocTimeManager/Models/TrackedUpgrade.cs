@@ -31,6 +31,14 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
         _ => DateTime.SpecifyKind(t, DateTimeKind.Local).ToUniversalTime(), // no offset saved: was local time
     };
 
+    /// <summary>Set for upgrades that came from a village export (null = added by hand).
+    /// The next import replaces these, so they stay in sync with the game.</summary>
+    public string? ImportKey { get; set; }
+
+    /// <summary>Export time of the import that created/updated this entry (UTC).</summary>
+    public DateTime ImportedAt { get => _importedAt; set => _importedAt = ToUtc(value); }
+    private DateTime _importedAt;
+
     /// <summary>True once the "done" sound/notification has fired, so it only fires once.</summary>
     public bool Notified { get; set; }
 

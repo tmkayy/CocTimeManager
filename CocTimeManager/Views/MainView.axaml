@@ -151,7 +151,7 @@
         </StackPanel>
 
         <!-- ============ Results + tracker ============ -->
-        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
+        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
             <TextBlock Grid.Row="0" Classes="h1" Text="Result" />
 
             <Border Grid.Row="1" Classes="card">
@@ -175,12 +175,16 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <TextBlock Grid.Column="0" Classes="h1" Text="Tracked upgrades" VerticalAlignment="Center" />
-                <Button Grid.Column="1" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
+                <Button Grid.Column="1" x:Name="ImportButton" Content="Import village"
+                        ToolTip.Tip="In the game: Settings → More Settings → Export village data (copies it to the clipboard). Then press this to add every running upgrade, lab research and pet upgrade. Importing again updates them; ones that are no longer running are removed." />
+                <Button Grid.Column="2" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
             </Grid>
 
-            <ItemsControl Grid.Row="3" x:Name="TrackedList">
+            <TextBlock Grid.Row="3" x:Name="ImportStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+
+            <ItemsControl Grid.Row="4" x:Name="TrackedList">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Spacing="8" />

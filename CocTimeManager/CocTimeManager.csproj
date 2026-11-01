@@ -10,6 +10,7 @@
         <AvaloniaResource Include="icons\**" />
         <AvaloniaResource Include="fonts\**" />
         <AvaloniaResource Include="snd\**" />
+        <AvaloniaResource Include="Data\**" />
     </ItemGroup>
 
     <ItemGroup>

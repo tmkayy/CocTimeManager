@@ -19,6 +19,11 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
 - **Inactivity Boost** – editable percentage
 - Result: local time now, finish date/time, real duration, total reduction %, with a per-step breakdown on the ⓘ badge
 - Tracked upgrades list with a green progress bar and countdown, saved between sessions
+- **Import from the game**: in Clash of Clans go to *Settings → More Settings → Export village data* (copies JSON to
+  the clipboard), then press **Import village**. Every running building/hero/trap upgrade, lab research, pet upgrade
+  and Builder Base upgrade is added with its exact finish time. Import again any time to sync: entries keep their
+  notifications, finished or cancelled ones are removed, and upgrades you added by hand are left alone.
+  Progress bars for newly imported items count from the export (the export only says how much time is left).
 - When an upgrade finishes: notification sound + system notification
   - **Desktop:** while the app is running (or the next time you open it, if it finished while closed).
     Closing the window keeps it running in the **system tray**; use **Quit** in the tray menu to exit.
@@ -43,13 +48,13 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 | Platform | File | How to install |
 |---|---|---|
 | Windows (64-bit) | `CocUpgradeTimer-<version>-windows-x64.exe` | Just run it. Windows SmartScreen may warn because the file isn't code-signed: click **More info → Run anyway**. |
-| Linux (x64) | `CocUpgradeTimer-<version>-linux-x64.tar.gz` | Extract it and run `./install.sh`. This adds **CoC Upgrade Timer** to your app launcher (with icon) and a `coc-upgrade-timer` command. Use `sudo ./install.sh --system` to install for all users, and `./uninstall.sh` to remove it. |
+| Linux (x64) | `CocUpgradeTimer-<version>-linux-x64.tar.gz` | Extract it and run `./install.sh`. This adds **CoC Upgrade Timer** to your app launcher (with icon) and a `coc-upgrade-timer` command. Use `sudo ./install.sh --system` to install for all users, and `./uninstall.sh` to remove it (also removes the start-at-login entry). |
 | Android 8.0+ | `CocUpgradeTimer-<version>-android.apk` | Open the APK on your phone and allow installing from unknown sources. Allow notifications on first launch. |
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.0.0-linux-x64.tar.gz
-cd CocUpgradeTimer-1.0.0-linux-x64
+tar -xzf CocUpgradeTimer-1.1.0-linux-x64.tar.gz
+cd CocUpgradeTimer-1.1.0-linux-x64
 ./install.sh
 ```
 
@@ -142,19 +147,30 @@ Requires Android 8.0 or newer.
 and the Android `.apk` into `release/`. It needs ImageMagick (`magick`) for the Linux icon, and a `dotnet` with the
 Android workload (set `ANDROID_DOTNET`, default `~/.dotnet/dotnet`).
 
+### Updating game names
+
+Imported items are named using `CocTimeManager/Data/game_names.json`. When a game update adds new items (they show up
+as e.g. `Pet #73000017`), regenerate it from [coc.py](https://github.com/mathsman5133/coc.py)'s game data:
+
+```bash
+python3 scripts/update-game-names.py
+```
+
 ## Project layout
 
 ```
 CocTimeManager/            shared UI and logic (Avalonia), icons, fonts, sound
-  Models/                  upgrade time calculator, tracked-upgrade storage
-  Services/                notification interface implemented per platform
+  Data/game_names.json     game id -> name table for village imports
+  Models/                  upgrade time calculator, tracked-upgrade storage, village export import
+  Services/                notification + start-at-login interfaces implemented per platform
   Views/                   MainView (the app UI) and the desktop MainWindow
   Styles/                  colours, text styles, progress bar, ⓘ badges
-CocTimeManager.Desktop/    desktop entry point + sound/notification for Windows/Linux/macOS
+CocTimeManager.Desktop/    desktop entry point, sound/notification, start at login, single instance
 CocTimeManager.Android/    Android entry point, scheduled notifications, boot receiver
 packaging/linux/           .desktop launcher entry, install.sh / uninstall.sh
 scripts/build-release.sh   builds all release files
+scripts/update-game-names.py  regenerates Data/game_names.json
 ```
 
-Tracked upgrades are saved as JSON in the user config folder
+Tracked upgrades are saved as JSON (times in UTC) in the user config folder
 (`~/.config/CocTimeManager/upgrades.json` on Linux, `%APPDATA%\CocTimeManager\upgrades.json` on Windows).

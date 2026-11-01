@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -44,6 +45,7 @@ public partial class MainView : UserControl
             check.IsCheckedChanged += (_, _) => Recalculate();
 
         TrackButton.Click += TrackButton_Click;
+        ImportButton.Click += ImportButton_Click;
 
         if (Autostart.Current is { } autostart)
         {
@@ -190,6 +192,61 @@ public partial class MainView : UserControl
         UpgradeStore.Save(_tracked);
         Notifications.Current.Schedule(upgrade);
         NameBox.Text = "";
+    }
+
+    private async void ImportButton_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var text = clipboard is null ? null : await clipboard.TryGetTextAsync();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                ShowImportStatus("The clipboard is empty. In the game use Settings → More Settings → Export village data first.");
+                return;
+            }
+            ShowImportStatus(ApplyImport(VillageImport.Parse(text)));
+        }
+        catch (FormatException ex)
+        {
+            ShowImportStatus(ex.Message + " In the game use Settings → More Settings → Export village data, then try again.");
+        }
+        catch (Exception ex)
+        {
+            ShowImportStatus("Import failed: " + ex.Message);
+        }
+    }
+
+    private void ShowImportStatus(string message)
+    {
+        ImportStatus.Text = message;
+        ImportStatus.IsVisible = true;
+    }
+
+    private string ApplyImport(VillageExport export)
+    {
+        var now = DateTime.UtcNow;
+        var merge = VillageImport.Merge(_tracked, export, now);
+        if (merge is null)
+            return "That export is older than the last one you imported, so nothing was changed.";
+
+        foreach (var o in merge.Removed)
+        {
+            _tracked.Remove(o);
+            Notifications.Current.Cancel(o);
+        }
+        foreach (var u in merge.Added)
+        {
+            _tracked.Add(u);
+            if (!u.Notified) Notifications.Current.Schedule(u);
+        }
+        UpgradeStore.Save(_tracked);
+
+        var age = now - export.ExportedAt;
+        var ageText = age < TimeSpan.FromMinutes(1) ? "just now" : UpgradeCalculator.Format(age) + " ago";
+        var total = merge.Added.Count;
+        return $"Imported {total} running upgrade{(total == 1 ? "" : "s")} from {export.Tag} (exported {ageText}): " +
+               $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed.";
     }
 
     private void RemoveTracked_Click(object? sender, RoutedEventArgs e)
