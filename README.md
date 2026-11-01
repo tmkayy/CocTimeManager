@@ -38,6 +38,10 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
     notes, email) and press **Paste code** there.
   - Merging never loses anything: upgrades you deleted stay deleted, the newest village import wins, and an
     upgrade that already notified on one device won't notify again.
+- **In-app updates:** the app checks for a new release on startup (or press *Settings → Check for updates*) and shows
+  an **Update** button. The download is verified against the release's `SHA256SUMS.txt`. Windows and Linux replace
+  themselves and restart; on Android the system installer opens (the first time, Android asks you to allow installs
+  from this app). Builds run from source don't update themselves.
 - When an upgrade finishes: notification sound + system notification
   - **Desktop:** while the app is running (or the next time you open it, if it finished while closed).
     Closing the window keeps it running in the **system tray**; use **Quit** in the tray menu to exit.
@@ -67,8 +71,8 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.2.0-linux-x64.tar.gz
-cd CocUpgradeTimer-1.2.0-linux-x64
+tar -xzf CocUpgradeTimer-1.2.1-linux-x64.tar.gz
+cd CocUpgradeTimer-1.2.1-linux-x64
 ./install.sh
 ```
 
@@ -176,11 +180,11 @@ python3 scripts/update-game-names.py
 CocTimeManager/            shared UI and logic (Avalonia), icons, fonts, sound
   Data/game_names.json     game id -> name table for village imports
   Models/                  upgrade time calculator, tracked-upgrade storage, village export import, sync codes
-  Services/                notifications, start at login (per platform), Wi-Fi sync with a 4-digit code
+  Services/                notifications, start at login, Wi-Fi sync with a 4-digit code, in-app updates
   Views/                   MainView (the app UI) and the desktop MainWindow
   Styles/                  colours, text styles, progress bar, ⓘ badges
-CocTimeManager.Desktop/    desktop entry point, sound/notification, start at login, single instance
-CocTimeManager.Android/    Android entry point, scheduled notifications, boot receiver
+CocTimeManager.Desktop/    desktop entry point, sound/notification, start at login, single instance, self-update
+CocTimeManager.Android/    Android entry point, scheduled notifications, boot receiver, APK update installer
 packaging/linux/           .desktop launcher entry, install.sh / uninstall.sh
 scripts/build-release.sh   builds all release files
 scripts/update-game-names.py  regenerates Data/game_names.json

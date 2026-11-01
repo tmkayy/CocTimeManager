@@ -13,12 +13,14 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        args = DesktopUpdateInstaller.HandleStartup(args); // after an in-app update: wait for the old version to exit
         if (SingleInstance.SignalExisting()) return; // already running: it shows its window instead
 
         Notifications.Current = new DesktopNotificationService();
         var autostart = new DesktopAutostart();
         autostart.RefreshIfEnabled();
         Autostart.Current = autostart;
+        Updater.Installer = new DesktopUpdateInstaller();
         SingleInstance.Listen(() => App.RequestShow());
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnExplicitShutdown);

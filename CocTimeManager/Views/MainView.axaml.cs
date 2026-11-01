@@ -48,6 +48,9 @@ public partial class MainView : UserControl
 
         TrackButton.Click += TrackButton_Click;
         ImportButton.Click += ImportButton_Click;
+        UpdateButton.Click += UpdateButton_Click;
+        CheckUpdatesButton.Click += (_, _) => _ = CheckForUpdatesAsync(userAsked: true);
+        SetupUpdates();
         CopySyncButton.Click += CopySync_Click;
         PasteSyncButton.Click += PasteSync_Click;
         ShowSyncCodeButton.Click += ShowSyncCode_Click;
@@ -59,7 +62,7 @@ public partial class MainView : UserControl
 
         if (Autostart.Current is { } autostart)
         {
-            AutostartCard.IsVisible = true;
+            AutostartRow.IsVisible = true;
             AutostartCheck.IsChecked = autostart.IsEnabled;
             AutostartCheck.IsCheckedChanged += (_, _) => Autostart.Set(AutostartCheck.IsChecked == true);
             // Tray menu toggled it, or writing the entry failed: show the real state.
@@ -459,6 +462,90 @@ public partial class MainView : UserControl
         finally
         {
             JoinSyncButton.IsEnabled = SyncCodeInput.IsEnabled = true;
+        }
+    }
+
+    // ---------- in-app updates ----------
+
+    private UpdateInfo? _update;
+
+    private void SetupUpdates()
+    {
+        var installer = Updater.Installer;
+        VersionText.Text = installer is null ? "Version unknown" : $"Version {installer.CurrentVersion}";
+        CheckUpdatesButton.IsVisible = installer is not null;
+        if (installer is null) return;
+
+        // Quiet check shortly after startup; offline or rate-limited just means no banner.
+        DispatcherTimer.RunOnce(() => _ = CheckForUpdatesAsync(userAsked: false), TimeSpan.FromSeconds(3));
+    }
+
+    private void ShowCheckStatus(string text)
+    {
+        UpdateCheckStatus.Text = text;
+        UpdateCheckStatus.IsVisible = true;
+    }
+
+    private async Task CheckForUpdatesAsync(bool userAsked)
+    {
+        if (Updater.Installer is not { } installer) return;
+        CheckUpdatesButton.IsEnabled = false;
+        if (userAsked) ShowCheckStatus("Checking…");
+        try
+        {
+            _update = await Task.Run(() => Updater.CheckAsync(installer.CurrentVersion, installer.AssetSuffix));
+            if (_update is null)
+            {
+                if (userAsked) ShowCheckStatus("You're on the latest version.");
+                return;
+            }
+
+            UpdateTitle.Text = $"Version {_update.Version} is available";
+            var reason = installer.CannotUpdateReason;
+            UpdateStatus.Text = reason ?? $"You have {installer.CurrentVersion}. Hover for what's new.";
+            UpdateButton.IsVisible = reason is null;
+            UpdateButton.IsEnabled = true;
+            ToolTip.SetTip(UpdateBanner, Shorten(_update.Notes));
+            UpdateBanner.IsVisible = true;
+            if (userAsked) ShowCheckStatus($"Version {_update.Version} is available, see the banner at the top.");
+        }
+        catch (Exception ex)
+        {
+            if (userAsked) ShowCheckStatus("Couldn't check for updates: " + ex.Message);
+        }
+        finally
+        {
+            CheckUpdatesButton.IsEnabled = true;
+        }
+    }
+
+    private static string Shorten(string notes)
+    {
+        var text = notes.Replace("\r", "").Trim();
+        var cut = text.IndexOf("## Downloads", StringComparison.Ordinal); // just the "what's new" part
+        if (cut > 0) text = text[..cut].Trim();
+        return text.Length > 700 ? text[..700] + "…" : text;
+    }
+
+    private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_update is null || Updater.Installer is not { } installer) return;
+        UpdateButton.IsEnabled = false;
+        try
+        {
+            var progress = new Progress<double>(p => UpdateStatus.Text = $"Downloading… {p:P0}");
+            UpdateStatus.Text = "Downloading…";
+            var update = _update;
+            var file = await Task.Run(() => Updater.DownloadAsync(update, installer.DownloadDirectory, progress));
+            UpdateStatus.Text = OperatingSystem.IsAndroid() ? "Opening the installer…" : "Installing and restarting…";
+            UpgradeStore.Save(_tracked); // desktop restarts right away
+            await installer.InstallAsync(file);
+            UpdateButton.IsEnabled = true; // Android: back here if the installer was dismissed
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus.Text = ex.Message;
+            UpdateButton.IsEnabled = true;
         }
     }
 }

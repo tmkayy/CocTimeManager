@@ -45,6 +45,15 @@
         <SolidColorBrush x:Key="ExpanderContentBackground" Color="{StaticResource OdCardColor}" />
         <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
 
+        <!-- Disabled inputs (e.g. % boxes of unticked reductions): a dimmed version of the enabled look.
+             Fluent's default fills the text part with the same colour as its border, so the border vanished. -->
+        <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#262A31" />
+        <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#7F848E" />
+        <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#262A31" />
+        <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#3E4451" />
+        <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled" Color="#262A31" />
+        <SolidColorBrush x:Key="RepeatButtonBorderBrushDisabled" Color="#3E4451" />
+
         <!-- Checkboxes: no tick mark, a ticked box is just solid blue -->
         <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="Transparent" />
         <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="Transparent" />

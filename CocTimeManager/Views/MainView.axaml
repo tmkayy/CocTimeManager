@@ -14,6 +14,17 @@
 
         <!-- ============ Inputs ============ -->
         <StackPanel x:Name="InputsPanel" Grid.Column="0" Spacing="12">
+                <!-- Shown when a newer release is out -->
+                <Border x:Name="UpdateBanner" Classes="card update" IsVisible="False">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Name="UpdateTitle" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="UpdateStatus" Classes="hint" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="UpdateButton" Classes="primary" Content="Update" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
                 <TextBlock Classes="h1" Text="New upgrade" />
 
                 <Border Classes="card">
@@ -180,17 +191,27 @@
                     </StackPanel>
                 </Expander>
 
-                <!-- Desktop only (shown from code when autostart is supported) -->
-                <Expander x:Name="AutostartCard" Classes="section" IsVisible="False">
+                <Expander x:Name="SettingsExpander" Classes="section">
                     <Expander.Header>
                         <TextBlock Classes="label" Text="Settings" />
                     </Expander.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
+                    <StackPanel Spacing="10">
+                    <!-- Desktop only (shown from code when autostart is supported) -->
+                    <StackPanel x:Name="AutostartRow" Orientation="Horizontal" Spacing="6" IsVisible="False">
                         <CheckBox x:Name="AutostartCheck" Content="Start at login" />
                         <Border Classes="info"
                                 ToolTip.Tip="Starts hidden in the system tray when you log in, so you get notified when upgrades finish without opening the app. Closing the window keeps it running in the tray; use Quit in the tray menu to exit.">
                             <TextBlock Text="i" />
                         </Border>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock x:Name="VersionText" Classes="label" />
+                            <TextBlock x:Name="UpdateCheckStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="CheckUpdatesButton" Content="Check for updates" VerticalAlignment="Center" />
+                    </Grid>
                     </StackPanel>
                 </Expander>
         </StackPanel>

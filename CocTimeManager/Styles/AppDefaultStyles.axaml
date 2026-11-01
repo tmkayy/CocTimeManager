@@ -97,6 +97,12 @@
         <Setter Property="Padding" Value="14" />
     </Style>
 
+    <!-- "Update available" banner: card with a blue edge -->
+    <Style Selector="Border.card.update">
+        <Setter Property="BorderBrush" Value="{StaticResource OdBlue}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
     <!-- Collapsible card (drop-down section) -->
     <Style Selector="Expander.section">
         <Setter Property="HorizontalAlignment" Value="Stretch" />

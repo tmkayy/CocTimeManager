@@ -4,3 +4,7 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 release/
+
+# App data files (if the app is ever started with its data folder pointing here)
+upgrades.json
+deleted.json

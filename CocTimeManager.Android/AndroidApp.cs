@@ -16,6 +16,7 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
     public override void OnCreate()
     {
         Notifications.Current = new AndroidNotificationService(this);
+        Updater.Installer = new AndroidUpdateInstaller(this);
         LanSync.AcquireBroadcastLock = () =>
         {
             // Many phones drop incoming broadcast packets to save power unless an app holds this lock.

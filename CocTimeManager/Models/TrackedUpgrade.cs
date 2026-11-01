@@ -85,8 +85,20 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
 
 public static class UpgradeStore
 {
-    private static readonly string Dir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CocTimeManager");
+    private static readonly string Dir = Path.Combine(ConfigRoot(), "CocTimeManager");
+
+    /// <summary>
+    /// The user config folder. GetFolderPath returns "" when the folder doesn't exist yet (e.g. no ~/.config),
+    /// which made the app save to a relative path in whatever folder it was started from; so ask .NET to
+    /// create it, and never fall back to a relative path.
+    /// </summary>
+    private static string ConfigRoot()
+    {
+        var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
+        if (Path.IsPathRooted(dir)) return dir;
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return Path.IsPathRooted(home) ? Path.Combine(home, ".config") : Path.GetTempPath();
+    }
     private static readonly string FilePath = Path.Combine(Dir, "upgrades.json");
     private static readonly string DeletedPath = Path.Combine(Dir, "deleted.json");
 
