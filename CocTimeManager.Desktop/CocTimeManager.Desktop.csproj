@@ -6,6 +6,10 @@
         <LangVersion>latest</LangVersion>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AssemblyName>CocTimeManager.Desktop</AssemblyName>
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+        <Version>1.0.0</Version>
+        <Product>CoC Upgrade Timer</Product>
+        <Authors>tmk</Authors>
     </PropertyGroup>
 
     <ItemGroup>

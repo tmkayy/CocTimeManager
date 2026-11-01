@@ -20,6 +20,8 @@ class Program
     public static AppBuilder BuildAvaloniaApp()
         => App.Configure(AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // Matches StartupWMClass in the Linux .desktop file so the launcher shows the right icon.
+            .With(new X11PlatformOptions { WmClass = "CocTimeManager" })
 #if DEBUG
             .WithDeveloperTools()
 #endif

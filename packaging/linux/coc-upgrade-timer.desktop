@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=CoC Upgrade Timer
+GenericName=Upgrade Timer
+Comment=Track Clash of Clans upgrade times with boosts and notifications
+Exec="@EXEC@"
+Icon=coc-upgrade-timer
+Terminal=false
+Categories=Utility;
+Keywords=clash;clans;coc;upgrade;timer;builder;
+StartupWMClass=CocTimeManager
+StartupNotify=true
