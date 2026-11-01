@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:CocTimeManager.Views"
+        x:Class="CocTimeManager.Views.MainWindow"
+        Width="900" Height="680" MinWidth="380" MinHeight="520"
+        Background="{StaticResource PrimaryBackground}"
+        Icon="avares://CocTimeManager/icons/hammer.png"
+        Title="CoC Upgrade Timer">
+    <v:MainView />
+</Window>

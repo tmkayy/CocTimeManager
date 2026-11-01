@@ -1,0 +1,173 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:m="using:CocTimeManager.Models"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="620"
+             x:Class="CocTimeManager.Views.MainView"
+             Background="{StaticResource PrimaryBackground}"
+             FontFamily="{StaticResource ContentControlThemeFontFamily}">
+    <!-- The whole page scrolls; MainView.axaml.cs switches RootGrid between
+         two columns (wide screens) and one stacked column (phones). -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Grid x:Name="RootGrid" ColumnDefinitions="360, *" RowDefinitions="Auto" Margin="16" ColumnSpacing="16" RowSpacing="20">
+
+        <!-- ============ Inputs ============ -->
+        <StackPanel x:Name="InputsPanel" Grid.Column="0" Spacing="12">
+                <TextBlock Classes="h1" Text="New upgrade" />
+
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <TextBlock Classes="label" Text="Name (optional)" />
+                        <TextBox x:Name="NameBox" PlaceholderText="e.g. Archer Queen 95" />
+
+                        <TextBlock Classes="label" Text="Full upgrade time" Margin="0,6,0,0" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <NumericUpDown x:Name="DaysInput" Minimum="0" Maximum="60" Value="0" Increment="1" FormatString="0" />
+                                <TextBlock Classes="hint" Text="days" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <NumericUpDown x:Name="HoursInput" Minimum="0" Maximum="23" Value="0" Increment="1" FormatString="0" />
+                                <TextBlock Classes="hint" Text="hours" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2">
+                                <NumericUpDown x:Name="MinutesInput" Minimum="0" Maximum="59" Value="0" Increment="1" FormatString="0" />
+                                <TextBlock Classes="hint" Text="minutes" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <CheckBox x:Name="PotionCheck">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Image Source="avares://CocTimeManager/icons/builder_potion.png" Classes="icon" />
+                                    <TextBlock Text="Builder Potion" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </CheckBox>
+                            <Border Classes="info"
+                                    ToolTip.Tip="Builders work 10x faster while the potion is active. One potion lasts 1 hour and saves 9 hours of upgrade time. Enter the total real time it will stay active (e.g. 2h for two stacked potions).">
+                                <TextBlock Text="i" />
+                            </Border>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                              IsEnabled="{Binding #PotionCheck.IsChecked}">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <NumericUpDown x:Name="PotionHoursInput" Minimum="0" Maximum="99" Value="1" Increment="1" FormatString="0" />
+                                <TextBlock Classes="hint" Text="hours active" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <NumericUpDown x:Name="PotionMinutesInput" Minimum="0" Maximum="59" Value="0" Increment="5" FormatString="0" />
+                                <TextBlock Classes="hint" Text="minutes active" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Classes="label" Text="Time reductions" />
+                            <Border Classes="info"
+                                    ToolTip.Tip="Percentages are editable in case an event or your Gold Pass tier differs. Hammer Jam and Summer Jam never run at the same time, so they share one slot. Reductions stack multiplicatively: 20% + 50% = 1 - 0.8 × 0.5 = 60% total.">
+                                <TextBlock Text="i" />
+                            </Border>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+                            <CheckBox Grid.Row="0" Grid.Column="0" x:Name="GoldPassCheck">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Image Source="avares://CocTimeManager/icons/gold_pass.png" Classes="icon" />
+                                    <TextBlock Text="Gold Pass" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </CheckBox>
+                            <NumericUpDown Grid.Row="0" Grid.Column="1" x:Name="GoldPassPct" VerticalAlignment="Center"
+                                           Minimum="0" Maximum="100" Value="20" Increment="5" FormatString="0'%'"
+                                           IsEnabled="{Binding #GoldPassCheck.IsChecked}" />
+
+                            <CheckBox Grid.Row="1" Grid.Column="0" x:Name="JamCheck">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Image Source="avares://CocTimeManager/icons/hammer.png" Classes="icon" />
+                                    <TextBlock Text="Hammer / Summer Jam" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </CheckBox>
+                            <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="JamPct" VerticalAlignment="Center"
+                                           Minimum="0" Maximum="100" Value="50" Increment="5" FormatString="0'%'"
+                                           IsEnabled="{Binding #JamCheck.IsChecked}" />
+
+                            <CheckBox Grid.Row="2" Grid.Column="0" x:Name="InactivityCheck">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Image Source="avares://CocTimeManager/icons/villager.webp" Classes="icon" />
+                                    <TextBlock Text="Inactivity Boost" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </CheckBox>
+                            <NumericUpDown Grid.Row="2" Grid.Column="1" x:Name="InactivityPct" VerticalAlignment="Center"
+                                           Minimum="0" Maximum="100" Value="50" Increment="5" FormatString="0'%'"
+                                           IsEnabled="{Binding #InactivityCheck.IsChecked}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+        </StackPanel>
+
+        <!-- ============ Results + tracker ============ -->
+        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
+            <TextBlock Grid.Row="0" Classes="h1" Text="Result" />
+
+            <Border Grid.Row="1" Classes="card">
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Local time now" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="NowText" TextWrapping="Wrap" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Done at" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="FinishText" Classes="value" TextWrapping="Wrap" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Time it'll take" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="DurationText" Classes="value" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Classes="label" Text="Total reduction" />
+                    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Name="ReductionText" Classes="value accent" VerticalAlignment="Center" />
+                        <Border x:Name="BreakdownInfo" Classes="info" ToolTip.Tip="Enter an upgrade time">
+                            <TextBlock Text="i" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="h1" Text="Tracked upgrades" VerticalAlignment="Center" />
+                <Button Grid.Column="1" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
+            </Grid>
+
+            <ItemsControl Grid.Row="3" x:Name="TrackedList">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="m:TrackedUpgrade">
+                        <Border Classes="card" Padding="12,10">
+                        <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding FinishText}" Classes="hint" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding RemainingText}" VerticalAlignment="Center"
+                                       Classes.done="{Binding IsDone}" />
+                            <Button Grid.Column="2" Content="✕" Click="RemoveTracked_Click"
+                                    VerticalAlignment="Center" Padding="8,2" />
+                            <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="upgrade"
+                                         Minimum="0" Maximum="100" Value="{Binding Progress}"
+                                         ShowProgressText="True" ProgressTextFormat="{}{0:0.0}%" />
+                        </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Grid>
+    </ScrollViewer>
+</UserControl>

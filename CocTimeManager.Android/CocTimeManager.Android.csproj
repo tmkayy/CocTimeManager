@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Build with the user-local SDK that has the Android workload:  ~/.dotnet/dotnet build -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0-android</TargetFramework>
+        <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <ApplicationId>com.tmk.coctimemanager</ApplicationId>
+        <ApplicationTitle>CoC Upgrade Timer</ApplicationTitle>
+        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <AndroidSdkDirectory Condition="'$(AndroidSdkDirectory)' == ''">$(HOME)/Android/Sdk</AndroidSdkDirectory>
+        <JavaSdkDirectory Condition="'$(JavaSdkDirectory)' == ''">$(HOME)/.local/share/jdk-21</JavaSdkDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Notification sound and launcher icon come from the shared project -->
+        <AndroidResource Include="..\CocTimeManager\snd\notif.mp3" Link="Resources\raw\notif.mp3" />
+        <AndroidResource Include="..\CocTimeManager\icons\hammer.png" Link="Resources\drawable\icon.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Android" Version="12.1.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\CocTimeManager\CocTimeManager.csproj" />
+    </ItemGroup>
+</Project>

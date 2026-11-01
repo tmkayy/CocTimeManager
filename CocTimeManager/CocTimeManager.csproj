@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Shared UI + logic. Platform projects: ../CocTimeManager.Desktop and ../CocTimeManager.Android -->
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="icons\**" />
+        <AvaloniaResource Include="fonts\**" />
+        <AvaloniaResource Include="snd\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.1.4"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4"/>
+    </ItemGroup>
+</Project>

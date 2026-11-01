@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CocTimeManager.App"
+             RequestedThemeVariant="Dark">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>
+    </Application.Styles>
+    <Application.Resources>
+        <SolidColorBrush x:Key="PrimaryBackground">#282233</SolidColorBrush>
+        <!-- Maple Mono everywhere: overrides the font FluentTheme uses for controls -->
+        <FontFamily x:Key="ContentControlThemeFontFamily">avares://CocTimeManager/fonts#Maple Mono</FontFamily>
+    </Application.Resources>
+</Application>

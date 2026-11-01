@@ -1,0 +1,130 @@
+# CoC Upgrade Timer
+
+A small Clash of Clans upgrade calculator and tracker built with [Avalonia UI](https://avaloniaui.net/) (.NET).
+Runs on Windows, Linux, macOS and Android.
+
+Enter an upgrade's full time, tick the boosts you have, and it tells you **how long the upgrade will really take**,
+**when it will be done** (in your system's local time and date format) and the **total % time reduction**.
+Start tracking it and you get a progress bar, a live countdown, and a sound + system notification when it finishes.
+
+## Features
+
+- Upgrade time input in days / hours / minutes
+- **Builder Potion** – enter how long it stays active (stacked potions = more hours). Builders work 10× faster while it's active.
+- **Gold Pass** – default 20 %, editable for your tier
+- **Hammer Jam / Summer Jam** – one slot, since they never run at the same time (default 50 %, editable)
+- **Inactivity Boost** – editable percentage
+- Result: local time now, finish date/time, real duration, total reduction %, with a per-step breakdown on the ⓘ badge
+- Tracked upgrades list with a green progress bar and countdown, saved between sessions
+- When an upgrade finishes: notification sound + system notification
+  - **Desktop:** while the app is open (or the next time you open it, if it finished while closed)
+  - **Android:** even when the app is closed (scheduled alarm, survives reboots)
+
+### How the maths works
+
+- Percentage reductions stack **multiplicatively**: Gold Pass 20 % + Hammer Jam 50 % → `0.8 × 0.5 = 0.4` of the time → **60 %** off.
+- The Builder Potion is applied after that: every real hour of potion does 10 hours of work, so 1 potion saves 9 hours
+  (less if the upgrade finishes before the potion runs out — the breakdown shows any wasted potion time).
+
+## Install
+
+### Prerequisites
+
+- [.NET SDK 9.0 or newer](https://dotnet.microsoft.com/download) (the desktop app targets `net9.0`)
+- Git
+
+```bash
+git clone https://github.com/tmkayy/CocTimeManager.git
+cd CocTimeManager
+```
+
+### Windows / Linux / macOS
+
+Run it directly:
+
+```bash
+dotnet run --project CocTimeManager.Desktop -c Release
+```
+
+Or publish a standalone build you can copy anywhere (no .NET install needed on the target machine).
+Pick the runtime for your system: `win-x64`, `linux-x64`, `osx-arm64` (Apple Silicon) or `osx-x64` (Intel Mac).
+
+```bash
+dotnet publish CocTimeManager.Desktop -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o publish
+```
+
+Then start `publish/CocTimeManager.Desktop` (`CocTimeManager.Desktop.exe` on Windows).
+
+**Linux notification requirements:** the sound needs one of `ffplay`, `mpg123`, `mpv`, `pw-play` or `paplay`,
+and the popup needs `notify-send` (package `libnotify`). Most desktops already have these.
+
+**Windows / macOS:** nothing extra; Windows uses the built-in media API and toast notifications, macOS uses `afplay` and `osascript`.
+
+### Android
+
+Building the Android app needs the .NET Android workload, a JDK (17 or 21) and the Android SDK.
+
+1. Install the workload:
+
+   ```bash
+   dotnet workload install android
+   ```
+
+   If your .NET is installed system-wide (e.g. from a Linux package manager) this needs `sudo`.
+   Without root, install a private SDK into your home folder and use that `dotnet` instead:
+
+   ```bash
+   curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0 --install-dir ~/.dotnet
+   ~/.dotnet/dotnet workload install android
+   ```
+
+2. Install a JDK 21 (e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download)).
+   The project looks in `~/.local/share/jdk-21` by default; point elsewhere with `-p:JavaSdkDirectory=/path/to/jdk`.
+
+3. Download the Android SDK packages (goes to `~/Android/Sdk` by default; override with `-p:AndroidSdkDirectory=...`):
+
+   ```bash
+   dotnet build CocTimeManager.Android -t:InstallAndroidDependencies -f net10.0-android -p:AcceptAndroidSDKLicenses=True
+   ```
+
+4. Build the APK:
+
+   ```bash
+   dotnet build CocTimeManager.Android -c Release
+   ```
+
+   The installable file is `CocTimeManager.Android/bin/Release/net10.0-android/com.tmk.coctimemanager-Signed.apk`.
+
+5. Install it on your phone, either by copying the APK over and opening it (allow "install unknown apps"),
+   or with USB debugging enabled:
+
+   ```bash
+   ~/Android/Sdk/platform-tools/adb install -r CocTimeManager.Android/bin/Release/net10.0-android/com.tmk.coctimemanager-Signed.apk
+   ```
+
+On first launch (Android 13+) allow notifications, otherwise finished upgrades can't alert you.
+Requires Android 8.0 or newer.
+
+> The APK is signed with a debug key, which is fine for installing on your own devices but not for the Play Store.
+
+## Project layout
+
+```
+CocTimeManager/            shared UI and logic (Avalonia), icons, fonts, sound
+  Models/                  upgrade time calculator, tracked-upgrade storage
+  Services/                notification interface implemented per platform
+  Views/                   MainView (the app UI) and the desktop MainWindow
+  Styles/                  colours, text styles, progress bar, ⓘ badges
+CocTimeManager.Desktop/    desktop entry point + sound/notification for Windows/Linux/macOS
+CocTimeManager.Android/    Android entry point, scheduled notifications, boot receiver
+```
+
+Tracked upgrades are saved as JSON in the user config folder
+(`~/.config/CocTimeManager/upgrades.json` on Linux, `%APPDATA%\CocTimeManager\upgrades.json` on Windows).
+
+## Credits
+
+- Made by tmk, with help from Claude (Anthropic)
+- UI font: [Maple Mono](https://github.com/subframe7536/maple-font), SIL Open Font License 1.1 (see `CocTimeManager/fonts/OFL.txt`)
+- Clash of Clans and its artwork are trademarks of Supercell. This is an unofficial fan project, not affiliated with,
+  endorsed, sponsored or approved by Supercell. See [Supercell's Fan Content Policy](https://supercell.com/en/fan-content-policy/).

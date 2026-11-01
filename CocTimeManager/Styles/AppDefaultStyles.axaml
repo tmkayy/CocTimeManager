@@ -1,0 +1,101 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20" Background="#282233">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="h1" Text="Heading" />
+                <Border Classes="card">
+                    <TextBlock Classes="value accent" Text="62.5%" />
+                </Border>
+                <Button Classes="primary">Start &amp; track</Button>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="Opacity" Value="0.75" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="TextBlock.hint">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+
+    <Style Selector="TextBlock.value">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.accent">
+        <Setter Property="Foreground" Value="#7CE38B" />
+        <Setter Property="FontSize" Value="22" />
+    </Style>
+
+    <Style Selector="TextBlock.done">
+        <Setter Property="Foreground" Value="#7CE38B" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style Selector="Image.icon">
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
+    <!-- Small round "i" badge that shows its ToolTip.Tip on hover -->
+    <Style Selector="Border.info">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="BorderBrush" Value="#9A90AD" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Help" />
+        <Setter Property="ToolTip.ShowDelay" Value="0" />
+        <Setter Property="ToolTip.Placement" Value="Right" />
+    </Style>
+    <Style Selector="Border.info > TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="#9A90AD" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.info:pointerover">
+        <Setter Property="BorderBrush" Value="#E8A33D" />
+    </Style>
+    <Style Selector="Border.info:pointerover > TextBlock">
+        <Setter Property="Foreground" Value="#E8A33D" />
+    </Style>
+    <Style Selector="ProgressBar.upgrade">
+        <Setter Property="Foreground" Value="#4CC25E" />
+        <Setter Property="Background" Value="#2A2436" />
+        <Setter Property="Height" Value="14" />
+        <Setter Property="MinHeight" Value="14" />
+        <Setter Property="CornerRadius" Value="7" />
+    </Style>
+
+    <Style Selector="ToolTip">
+        <Setter Property="MaxWidth" Value="320" />
+    </Style>
+
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="#352E43" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="#E8A33D" />
+        <Setter Property="Foreground" Value="#1E1A26" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+</Styles>

@@ -3,7 +3,9 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="App.axaml" value="CocTimeManager.csproj" />
         <entry key="MainWindow.axaml" value="CocTimeManager.csproj" />
+        <entry key="Styles/AppDefaultStyles.axaml" value="CocTimeManager.csproj" />
       </map>
     </option>
   </component>

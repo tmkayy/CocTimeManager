@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace CocTimeManager;
+namespace CocTimeManager.Views;
 
 public partial class MainWindow : Window
 {
