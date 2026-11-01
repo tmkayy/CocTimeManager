@@ -13,6 +13,7 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
 
 - Upgrade time input in days / hours / minutes
 - **Builder Potion** – enter how long it stays active (stacked potions = more hours). Builders work 10× faster while it's active.
+- **Builder Bite** – enter how long bites stay active (1 bite = 1 hour). Builders work 2× faster while it's active.
 - **Gold Pass** – default 20 %, editable for your tier
 - **Hammer Jam / Summer Jam** – one slot, since they never run at the same time (default 50 %, editable)
 - **Inactivity Boost** – editable percentage
@@ -30,6 +31,10 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
 - Percentage reductions stack **multiplicatively**: Gold Pass 20 % + Hammer Jam 50 % → `0.8 × 0.5 = 0.4` of the time → **60 %** off.
 - The Builder Potion is applied after that: every real hour of potion does 10 hours of work, so 1 potion saves 9 hours
   (less if the upgrade finishes before the potion runs out — the breakdown shows any wasted potion time).
+- Builder Bites (2×) **don't stack with a Builder Potion**: since the February 2026 update, a bite adds nothing
+  while a potion is active. So bites are counted as used right after the potion ends (what the game recommends):
+  10× during the potion, then 2× during the bites, then normal speed.
+  Example: 24 h upgrade + 1 potion + 1 bite → 10 h of work in the potion hour, 2 h in the bite hour, 12 h left → **14 h**.
 
 ## Download
 

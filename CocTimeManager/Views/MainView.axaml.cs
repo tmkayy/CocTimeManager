@@ -36,10 +36,11 @@ public partial class MainView : UserControl
         TrackedList.ItemsSource = _tracked;
 
         foreach (var input in new[] { DaysInput, HoursInput, MinutesInput, PotionHoursInput, PotionMinutesInput,
+                                      BiteHoursInput, BiteMinutesInput,
                                       GoldPassPct, JamPct, InactivityPct })
             input.ValueChanged += (_, _) => Recalculate();
 
-        foreach (var check in new[] { PotionCheck, GoldPassCheck, JamCheck, InactivityCheck })
+        foreach (var check in new[] { PotionCheck, BiteCheck, GoldPassCheck, JamCheck, InactivityCheck })
             check.IsCheckedChanged += (_, _) => Recalculate();
 
         TrackButton.Click += TrackButton_Click;
@@ -132,7 +133,11 @@ public partial class MainView : UserControl
             ? TimeSpan.FromHours(Val(PotionHoursInput)) + TimeSpan.FromMinutes(Val(PotionMinutesInput))
             : TimeSpan.Zero;
 
-        var r = UpgradeCalculator.Calculate(baseTime, reductions.ToArray(), potion, now);
+        var bites = BiteCheck.IsChecked == true
+            ? TimeSpan.FromHours(Val(BiteHoursInput)) + TimeSpan.FromMinutes(Val(BiteMinutesInput))
+            : TimeSpan.Zero;
+
+        var r = UpgradeCalculator.Calculate(baseTime, reductions.ToArray(), potion, bites, now);
         _lastResult = r;
 
         var zone = TimeZoneInfo.Local.IsDaylightSavingTime(localNow) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
@@ -159,9 +164,16 @@ public partial class MainView : UserControl
             lines.Add($"After reductions: {UpgradeCalculator.Format(r.BoostedTime)}");
         if (r.PotionUsed > TimeSpan.Zero)
         {
-            lines.Add($"Potion active for {UpgradeCalculator.Format(r.PotionUsed)} (saves {UpgradeCalculator.Format(r.BoostedTime - r.RealTime)})");
+            lines.Add($"Potion (10x) active for {UpgradeCalculator.Format(r.PotionUsed)} (saves {UpgradeCalculator.Format(r.PotionSaved)})");
             if (r.PotionUsed < potion)
                 lines.Add($"Upgrade finishes before the potion ends: {UpgradeCalculator.Format(potion - r.PotionUsed)} wasted");
+        }
+        if (bites > TimeSpan.Zero)
+        {
+            if (r.BiteUsed > TimeSpan.Zero)
+                lines.Add($"Bites (2x) active for {UpgradeCalculator.Format(r.BiteUsed)}{(potion > TimeSpan.Zero ? " after the potion" : "")} (saves {UpgradeCalculator.Format(r.BiteSaved)})");
+            if (r.BiteUsed < bites)
+                lines.Add($"Upgrade finishes before the bites run out: {UpgradeCalculator.Format(bites - r.BiteUsed)} wasted");
         }
         lines.Add($"Real time: {UpgradeCalculator.Format(r.RealTime)}");
         ToolTip.SetTip(BreakdownInfo, string.Join(Environment.NewLine, lines));

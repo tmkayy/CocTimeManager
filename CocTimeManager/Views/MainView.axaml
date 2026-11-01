@@ -68,6 +68,34 @@
                 </Border>
 
                 <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <CheckBox x:Name="BiteCheck">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Image Source="avares://CocTimeManager/icons/builder_bite.png" Classes="icon" />
+                                    <TextBlock Text="Builder Bite" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </CheckBox>
+                            <Border Classes="info"
+                                    ToolTip.Tip="Builders work 2x faster while a bite is active. One bite lasts 1 hour and saves 1 hour of upgrade time. Bites don't stack with a Builder Potion (no extra speed while the potion runs), so they're counted as used right after the potion ends. Enter the total real time they'll stay active (e.g. 3h for three bites).">
+                                <TextBlock Text="i" />
+                            </Border>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                              IsEnabled="{Binding #BiteCheck.IsChecked}">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <NumericUpDown x:Name="BiteHoursInput" Minimum="0" Maximum="99" Value="1" Increment="1" FormatString="0" />
+                                <TextBlock Classes="hint" Text="hours active" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <NumericUpDown x:Name="BiteMinutesInput" Minimum="0" Maximum="59" Value="0" Increment="5" FormatString="0" />
+                                <TextBlock Classes="hint" Text="minutes active" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
                     <StackPanel Spacing="10">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Classes="label" Text="Time reductions" />
