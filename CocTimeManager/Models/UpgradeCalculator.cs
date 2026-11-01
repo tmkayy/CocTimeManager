@@ -19,7 +19,7 @@ public static class UpgradeCalculator
     /// <param name="percentReductions">Flat time reductions (Gold Pass, Hammer Jam, ...) in percent, e.g. 20 for 20%.
     /// They stack multiplicatively: 20% and 50% give 1 - 0.8 * 0.5 = 60% total.</param>
     /// <param name="potionDuration">Real time the builder potion stays active (1 potion = 1 hour).</param>
-    /// <param name="now">Start time of the upgrade (local time).</param>
+    /// <param name="now">Start time of the upgrade (UTC; FinishAt comes back in the same kind).</param>
     public static UpgradeResult Calculate(TimeSpan baseTime, double[] percentReductions, TimeSpan potionDuration, DateTime now)
     {
         if (baseTime < TimeSpan.Zero) baseTime = TimeSpan.Zero;

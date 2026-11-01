@@ -19,7 +19,10 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
 - Result: local time now, finish date/time, real duration, total reduction %, with a per-step breakdown on the ⓘ badge
 - Tracked upgrades list with a green progress bar and countdown, saved between sessions
 - When an upgrade finishes: notification sound + system notification
-  - **Desktop:** while the app is open (or the next time you open it, if it finished while closed)
+  - **Desktop:** while the app is running (or the next time you open it, if it finished while closed).
+    Closing the window keeps it running in the **system tray**; use **Quit** in the tray menu to exit.
+    Tick **Start at login** (in the app or the tray menu) and it starts hidden in the tray when you log in,
+    so you get notified even after a reboot without opening it.
   - **Android:** even when the app is closed (scheduled alarm, survives reboots)
 
 ### How the maths works

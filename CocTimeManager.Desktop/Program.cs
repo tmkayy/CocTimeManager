@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using CocTimeManager.Services;
 
 namespace CocTimeManager.Desktop;
@@ -12,8 +13,15 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (SingleInstance.SignalExisting()) return; // already running: it shows its window instead
+
         Notifications.Current = new DesktopNotificationService();
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        var autostart = new DesktopAutostart();
+        autostart.RefreshIfEnabled();
+        Autostart.Current = autostart;
+        SingleInstance.Listen(() => App.RequestShow());
+
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnExplicitShutdown);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

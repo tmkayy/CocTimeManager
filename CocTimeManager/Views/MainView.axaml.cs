@@ -44,6 +44,15 @@ public partial class MainView : UserControl
 
         TrackButton.Click += TrackButton_Click;
 
+        if (Autostart.Current is { } autostart)
+        {
+            AutostartCard.IsVisible = true;
+            AutostartCheck.IsChecked = autostart.IsEnabled;
+            AutostartCheck.IsCheckedChanged += (_, _) => Autostart.Set(AutostartCheck.IsChecked == true);
+            // Tray menu toggled it, or writing the entry failed: show the real state.
+            Autostart.Changed += () => Dispatcher.UIThread.Post(() => AutostartCheck.IsChecked = autostart.IsEnabled);
+        }
+
         _timer.Tick += (_, _) =>
         {
             Recalculate(); // keeps "now" and "done at" current
@@ -101,7 +110,8 @@ public partial class MainView : UserControl
     private void Recalculate()
     {
         var culture = CultureInfo.CurrentCulture;
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
+        var localNow = now.ToLocalTime();
 
         var baseTime = TimeSpan.FromDays(Val(DaysInput)) + TimeSpan.FromHours(Val(HoursInput)) +
                        TimeSpan.FromMinutes(Val(MinutesInput));
@@ -125,7 +135,8 @@ public partial class MainView : UserControl
         var r = UpgradeCalculator.Calculate(baseTime, reductions.ToArray(), potion, now);
         _lastResult = r;
 
-        NowText.Text = $"{now.ToString("F", culture)}  ({TimeZoneInfo.Local.StandardName})";
+        var zone = TimeZoneInfo.Local.IsDaylightSavingTime(localNow) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
+        NowText.Text = $"{localNow.ToString("F", culture)}  ({zone})";
 
         if (baseTime == TimeSpan.Zero)
         {
@@ -138,7 +149,7 @@ public partial class MainView : UserControl
         }
 
         TrackButton.IsEnabled = true;
-        FinishText.Text = r.FinishAt.ToString("f", culture);
+        FinishText.Text = r.FinishAt.ToLocalTime().ToString("f", culture);
         DurationText.Text = UpgradeCalculator.Format(r.RealTime);
         ReductionText.Text = r.TotalReductionPercent.ToString("0.##", culture) + "%";
 
@@ -162,7 +173,7 @@ public partial class MainView : UserControl
         if (_lastResult is null || _lastResult.BaseTime == TimeSpan.Zero) return;
 
         var name = string.IsNullOrWhiteSpace(NameBox.Text) ? "Upgrade" : NameBox.Text.Trim();
-        var upgrade = new TrackedUpgrade { Name = name, StartedAt = DateTime.Now, FinishAt = _lastResult.FinishAt };
+        var upgrade = new TrackedUpgrade { Name = name, StartedAt = DateTime.UtcNow, FinishAt = _lastResult.FinishAt };
         _tracked.Add(upgrade);
         UpgradeStore.Save(_tracked);
         Notifications.Current.Schedule(upgrade);

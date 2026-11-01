@@ -109,6 +109,17 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+
+                <!-- Desktop only (shown from code when autostart is supported) -->
+                <Border x:Name="AutostartCard" Classes="card" IsVisible="False">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <CheckBox x:Name="AutostartCheck" Content="Start at login" />
+                        <Border Classes="info"
+                                ToolTip.Tip="Starts hidden in the system tray when you log in, so you get notified when upgrades finish without opening the app. Closing the window keeps it running in the tray; use Quit in the tray menu to exit.">
+                            <TextBlock Text="i" />
+                        </Border>
+                    </StackPanel>
+                </Border>
         </StackPanel>
 
         <!-- ============ Results + tracker ============ -->
