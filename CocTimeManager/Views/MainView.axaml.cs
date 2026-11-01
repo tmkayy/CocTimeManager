@@ -246,7 +246,10 @@ public partial class MainView : UserControl
         var ageText = age < TimeSpan.FromMinutes(1) ? "just now" : UpgradeCalculator.Format(age) + " ago";
         var total = merge.Added.Count;
         return $"Imported {total} running upgrade{(total == 1 ? "" : "s")} from {export.Tag} (exported {ageText}): " +
-               $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed.";
+               $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed." +
+               (export.BoostedCount > 0
+                   ? $" Builder Potion active ({UpgradeCalculator.Format(export.BuilderBoostLeft)} left at export): applied to {export.BoostedCount} builder upgrade{(export.BoostedCount == 1 ? "" : "s")}."
+                   : "");
     }
 
     private void RemoveTracked_Click(object? sender, RoutedEventArgs e)

@@ -10,7 +10,10 @@ namespace CocTimeManager.Models;
 /// <param name="Key">Identifies the item across exports: section, game id and current level.</param>
 public sealed record ImportedTimer(string Key, string Name, DateTime FinishAt);
 
-public sealed record VillageExport(string Tag, DateTime ExportedAt, List<ImportedTimer> Timers);
+/// <param name="BuilderBoostLeft">Builder Potion time left at export (zero if none was active).</param>
+/// <param name="BoostedCount">How many timers the active potion was applied to.</param>
+public sealed record VillageExport(string Tag, DateTime ExportedAt, List<ImportedTimer> Timers,
+                                   TimeSpan BuilderBoostLeft, int BoostedCount);
 
 /// <summary>What an import changes: <see cref="Removed"/> are all previously imported entries,
 /// <see cref="Added"/> their replacements; <see cref="Kept"/> of them continue an earlier entry.</summary>
@@ -20,6 +23,12 @@ public sealed record ImportMerge(List<TrackedUpgrade> Removed, List<TrackedUpgra
 /// Reads the JSON from the game's Settings → "Export village data" (copied to the clipboard).
 /// Every running upgrade has <c>"timer"</c> = seconds left at the export's <c>"timestamp"</c> (Unix, UTC).
 /// Sections ending in "2" (buildings2, units2, ...) are the Builder Base.
+/// <para>
+/// <c>timer</c> is work left at normal speed: an active Builder Potion is NOT taken into account
+/// (checked against two exports 24 min apart, the second 17 s into a potion: home builder timers dropped
+/// 9 × 17 s more than the rest). The potion's time left is in <c>boosts.builder_boost</c> (seconds), so
+/// home-village builder upgrades get 10× speed for that long, then normal speed.
+/// </para>
 /// </summary>
 public static class VillageImport
 {
@@ -29,6 +38,10 @@ public static class VillageImport
         ["heroes"] = "Hero", ["spells"] = "Spell", ["pets"] = "Pet", ["equipment"] = "Equipment",
         ["guardians"] = "Guardian", ["decos"] = "Decoration",
     };
+
+    /// <summary>Home-village sections worked on by builders, so sped up by a Builder Potion.
+    /// Not the lab (units, spells, siege machines), pets, equipment or the Builder Base.</summary>
+    private static readonly HashSet<string> BuilderSections = ["buildings", "traps", "heroes", "guardians"];
 
     private static Dictionary<string, string>? _names;
 
@@ -72,6 +85,11 @@ public static class VillageImport
             var tag = root.TryGetProperty("tag", out var tagEl) && tagEl.ValueKind == JsonValueKind.String
                 ? tagEl.GetString() ?? "" : "";
 
+            var builderBoost = root.TryGetProperty("boosts", out var boostsEl) && boostsEl.ValueKind == JsonValueKind.Object &&
+                               boostsEl.TryGetProperty("builder_boost", out var bbEl) && bbEl.TryGetInt64(out var bb) && bb > 0
+                ? TimeSpan.FromSeconds(bb) : TimeSpan.Zero;
+            var boosted = 0;
+
             var timers = new List<ImportedTimer>();
             foreach (var section in root.EnumerateObject().Where(p => p.Value.ValueKind == JsonValueKind.Array))
             {
@@ -91,11 +109,19 @@ public static class VillageImport
                         : $"{Kinds.GetValueOrDefault(baseSection, "Item")} #{id}"; // newer than our name table
                     var label = $"{name} → {lvl + 1}{(builderBase ? " (Builder Base)" : "")}";
 
-                    timers.Add(new ImportedTimer($"{section.Name}:{id}:{lvl}", label, exportedAt.AddSeconds(secondsLeft)));
+                    var finish = exportedAt.AddSeconds(secondsLeft);
+                    if (builderBoost > TimeSpan.Zero && BuilderSections.Contains(section.Name))
+                    {
+                        finish = UpgradeCalculator.Calculate(TimeSpan.FromSeconds(secondsLeft), [], builderBoost,
+                                                             TimeSpan.Zero, exportedAt).FinishAt;
+                        boosted++;
+                    }
+
+                    timers.Add(new ImportedTimer($"{section.Name}:{id}:{lvl}", label, finish));
                 }
             }
 
-            return new VillageExport(tag, exportedAt, timers.OrderBy(t => t.FinishAt).ToList());
+            return new VillageExport(tag, exportedAt, timers.OrderBy(t => t.FinishAt).ToList(), builderBoost, boosted);
         }
     }
 

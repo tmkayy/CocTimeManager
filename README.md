@@ -24,6 +24,10 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
   and Builder Base upgrade is added with its exact finish time. Import again any time to sync: entries keep their
   notifications, finished or cancelled ones are removed, and upgrades you added by hand are left alone.
   Progress bars for newly imported items count from the export (the export only says how much time is left).
+  A **Builder Potion that's active** when you export is taken into account: the export lists the potion's time left,
+  and home-village builder upgrades get 10× speed for that long (lab, pets and Builder Base aren't affected).
+  Builder's Apprentice / Lab Assistant work that's already done is included in the export's timers, so just re-import
+  after using them.
 - When an upgrade finishes: notification sound + system notification
   - **Desktop:** while the app is running (or the next time you open it, if it finished while closed).
     Closing the window keeps it running in the **system tray**; use **Quit** in the tray menu to exit.
@@ -53,8 +57,8 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.1.0-linux-x64.tar.gz
-cd CocUpgradeTimer-1.1.0-linux-x64
+tar -xzf CocUpgradeTimer-1.1.1-linux-x64.tar.gz
+cd CocUpgradeTimer-1.1.1-linux-x64
 ./install.sh
 ```
 
