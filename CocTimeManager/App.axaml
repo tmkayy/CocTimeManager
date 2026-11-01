@@ -2,15 +2,90 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CocTimeManager.App"
              RequestedThemeVariant="Dark">
-    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
-    <Application.Styles>
-        <FluentTheme />
-        <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>
-    </Application.Styles>
+    <!-- Resources come before Styles: the styles reference these colours while loading -->
     <Application.Resources>
-        <SolidColorBrush x:Key="PrimaryBackground">#282233</SolidColorBrush>
+        <!-- One Dark colours, used by Styles/AppDefaultStyles.axaml -->
+        <Color x:Key="OdBackgroundColor">#282C34</Color>
+        <Color x:Key="OdDarkerColor">#21252B</Color>
+        <Color x:Key="OdCardColor">#2F343F</Color>
+        <Color x:Key="OdCardHoverColor">#353B47</Color>
+        <Color x:Key="OdBorderColor">#3E4451</Color>
+        <Color x:Key="OdTextColor">#ABB2BF</Color>
+        <Color x:Key="OdCommentColor">#5C6370</Color>
+        <Color x:Key="OdBlueColor">#61AFEF</Color>
+        <Color x:Key="OdGreenColor">#98C379</Color>
+        <Color x:Key="OdYellowColor">#E5C07B</Color>
+        <Color x:Key="OdRedColor">#E06C75</Color>
+        <Color x:Key="OdPurpleColor">#C678DD</Color>
+
+        <SolidColorBrush x:Key="OdBackground" Color="{StaticResource OdBackgroundColor}" />
+        <SolidColorBrush x:Key="OdDarker" Color="{StaticResource OdDarkerColor}" />
+        <SolidColorBrush x:Key="OdCard" Color="{StaticResource OdCardColor}" />
+        <SolidColorBrush x:Key="OdCardHover" Color="{StaticResource OdCardHoverColor}" />
+        <SolidColorBrush x:Key="OdBorder" Color="{StaticResource OdBorderColor}" />
+        <SolidColorBrush x:Key="OdText" Color="{StaticResource OdTextColor}" />
+        <SolidColorBrush x:Key="OdComment" Color="{StaticResource OdCommentColor}" />
+        <SolidColorBrush x:Key="OdBlue" Color="{StaticResource OdBlueColor}" />
+        <SolidColorBrush x:Key="OdGreen" Color="{StaticResource OdGreenColor}" />
+        <SolidColorBrush x:Key="OdYellow" Color="{StaticResource OdYellowColor}" />
+        <SolidColorBrush x:Key="OdRed" Color="{StaticResource OdRedColor}" />
+        <SolidColorBrush x:Key="OdPurple" Color="{StaticResource OdPurpleColor}" />
+
+        <SolidColorBrush x:Key="PrimaryBackground" Color="{StaticResource OdBackgroundColor}" />
+        <SolidColorBrush x:Key="CardBackground" Color="{StaticResource OdCardColor}" />
+
+        <!-- Expanders look like the other cards -->
+        <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="{StaticResource OdCardColor}" />
+        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="{StaticResource OdCardHoverColor}" />
+        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="{StaticResource OdCardHoverColor}" />
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="Transparent" />
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="Transparent" />
+        <SolidColorBrush x:Key="ExpanderContentBackground" Color="{StaticResource OdCardColor}" />
+        <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
+
+        <!-- Checkboxes: no tick mark, a ticked box is just solid blue -->
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" Color="Transparent" />
+
         <!-- Maple Mono everywhere: overrides the font FluentTheme uses for controls -->
         <FontFamily x:Key="ContentControlThemeFontFamily">avares://CocTimeManager/fonts#Maple Mono</FontFamily>
     </Application.Resources>
+
+    <Application.Styles>
+        <!-- One Dark palette for the built-in controls (text boxes, number inputs, buttons, checkboxes, ...) -->
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark"
+                                       Accent="#61AFEF"
+                                       RegionColor="#282C34"
+                                       ErrorText="#E06C75"
+                                       BaseHigh="#ABB2BF"
+                                       BaseMediumHigh="#9DA5B4"
+                                       BaseMedium="#7F848E"
+                                       BaseMediumLow="#5C6370"
+                                       BaseLow="#3E4451"
+                                       AltHigh="#21252B"
+                                       AltMediumHigh="#21252B"
+                                       AltMedium="#21252B"
+                                       AltMediumLow="#21252B"
+                                       AltLow="#21252B"
+                                       ChromeHigh="#4B5263"
+                                       ChromeMedium="#3A3F4B"
+                                       ChromeMediumLow="#2C313A"
+                                       ChromeLow="#21252B"
+                                       ChromeAltLow="#ABB2BF"
+                                       ChromeGray="#5C6370"
+                                       ChromeWhite="#ABB2BF"
+                                       ChromeDisabledHigh="#3E4451"
+                                       ChromeDisabledLow="#5C6370"
+                                       ListLow="#2C313A"
+                                       ListMedium="#3E4451" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>
+    </Application.Styles>
 </Application>

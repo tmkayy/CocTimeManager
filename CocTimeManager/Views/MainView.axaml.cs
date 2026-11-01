@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -46,6 +48,14 @@ public partial class MainView : UserControl
 
         TrackButton.Click += TrackButton_Click;
         ImportButton.Click += ImportButton_Click;
+        CopySyncButton.Click += CopySync_Click;
+        PasteSyncButton.Click += PasteSync_Click;
+        ShowSyncCodeButton.Click += ShowSyncCode_Click;
+        EnterSyncCodeButton.Click += EnterSyncCode_Click;
+        JoinSyncButton.Click += JoinSync_Click;
+        CancelSyncButton.Click += (_, _) => CancelSync();
+        CancelJoinButton.Click += (_, _) => CancelSync();
+        SyncCodeInput.KeyDown += (_, e) => { if (e.Key == Key.Enter) JoinSync_Click(null, e); };
 
         if (Autostart.Current is { } autostart)
         {
@@ -187,7 +197,10 @@ public partial class MainView : UserControl
         if (_lastResult is null || _lastResult.BaseTime == TimeSpan.Zero) return;
 
         var name = string.IsNullOrWhiteSpace(NameBox.Text) ? "Upgrade" : NameBox.Text.Trim();
-        var upgrade = new TrackedUpgrade { Name = name, StartedAt = DateTime.UtcNow, FinishAt = _lastResult.FinishAt };
+        var upgrade = new TrackedUpgrade
+        {
+            Name = name, StartedAt = DateTime.UtcNow, FinishAt = _lastResult.FinishAt, UpdatedAt = DateTime.UtcNow,
+        };
         _tracked.Add(upgrade);
         UpgradeStore.Save(_tracked);
         Notifications.Current.Schedule(upgrade);
@@ -259,6 +272,193 @@ public partial class MainView : UserControl
             _tracked.Remove(item);
             UpgradeStore.Save(_tracked);
             Notifications.Current.Cancel(item);
+
+            // Remember the deletion so syncing with another device doesn't bring it back.
+            var deleted = UpgradeStore.LoadDeleted();
+            deleted[item.Id] = DateTime.UtcNow;
+            UpgradeStore.SaveDeleted(deleted);
+        }
+    }
+
+    // ---------- device sync (copy/paste code) ----------
+
+    private async void CopySync_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null) throw new InvalidOperationException("no clipboard available");
+            var code = SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
+            await clipboard.SetTextAsync(code);
+            ShowImportStatus($"Sync code copied ({code.Length} characters, {_tracked.Count} upgrade{(_tracked.Count == 1 ? "" : "s")}). " +
+                             "Send it to your other device and press Paste code there.");
+        }
+        catch (Exception ex)
+        {
+            ShowImportStatus("Couldn't copy the sync code: " + ex.Message);
+        }
+    }
+
+    private async void PasteSync_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var text = clipboard is null ? null : await clipboard.TryGetTextAsync();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                ShowImportStatus("The clipboard is empty. Press Copy code on your other device and send the code here first.");
+                return;
+            }
+            ShowImportStatus(ApplySync(SyncCode.Parse(text)));
+        }
+        catch (FormatException ex)
+        {
+            ShowImportStatus(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            ShowImportStatus("Sync failed: " + ex.Message);
+        }
+    }
+
+    /// <summary>Merges another device's list into ours and returns a status message.</summary>
+    private string ApplySync(SyncPayload incoming)
+    {
+        var r = SyncCode.Merge(_tracked.ToList(), UpgradeStore.LoadDeleted(), incoming, DateTime.UtcNow);
+
+        // Swap in the merged list; re-schedule so Android alarms match it (desktop ignores these).
+        foreach (var old in _tracked) Notifications.Current.Cancel(old);
+        _tracked.Clear();
+        foreach (var u in r.Upgrades.OrderBy(u => u.FinishAt))
+        {
+            _tracked.Add(u);
+            if (!u.Notified) Notifications.Current.Schedule(u);
+        }
+        UpgradeStore.Save(_tracked);
+        UpgradeStore.SaveDeleted(r.Deleted);
+        CheckFinished();
+
+        return r.Added + r.Updated + r.Removed == 0
+            ? "Already in sync, nothing changed."
+            : $"Synced: {r.Added} added, {r.Updated} updated, {r.Removed} removed." +
+              (r.ImportsReplaced ? " Used the other device's newer village import." : "");
+    }
+
+    // ---------- Wi-Fi sync with a 4-digit code ----------
+
+    private CancellationTokenSource? _syncCts;
+
+    private enum SyncUi { Idle, Hosting, Joining }
+
+    private void SetSyncUi(SyncUi state)
+    {
+        SyncIdlePanel.IsVisible = state == SyncUi.Idle;
+        SyncHostPanel.IsVisible = state == SyncUi.Hosting;
+        SyncJoinPanel.IsVisible = state == SyncUi.Joining;
+    }
+
+    private void CancelSync()
+    {
+        _syncCts?.Cancel();
+        _syncCts = null;
+        SetSyncUi(SyncUi.Idle);
+    }
+
+    private async void ShowSyncCode_Click(object? sender, RoutedEventArgs e)
+    {
+        CancelSync();
+        var cts = _syncCts = new CancellationTokenSource();
+        var code = LanSync.NewCode();
+        SyncCodeText.Text = code;
+        SetSyncUi(SyncUi.Hosting);
+
+        // Countdown under the code.
+        var until = DateTime.UtcNow + LanSync.HostTimeout;
+        var countdown = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        void Tick()
+        {
+            var left = until - DateTime.UtcNow;
+            SyncHostHint.Text = $"Enter it on your other device\nSame Wi-Fi · {Math.Max(0, (int)left.TotalMinutes)}:{Math.Max(0, left.Seconds):00} left";
+        }
+        countdown.Tick += (_, _) => Tick();
+        Tick();
+        countdown.Start();
+
+        try
+        {
+            await LanSync.HostAsync(code, theirCode =>
+            {
+                // Runs on a worker thread: merge on the UI thread, then send back our merged list.
+                return Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ShowImportStatus(ApplySync(SyncCode.Parse(theirCode)));
+                    return SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
+                }).GetTask();
+            }, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled by the user.
+        }
+        catch (Exception ex) when (ex is LanSyncException or FormatException)
+        {
+            if (!cts.IsCancellationRequested) ShowImportStatus(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            if (!cts.IsCancellationRequested) ShowImportStatus("Sync failed: " + ex.Message);
+        }
+        finally
+        {
+            countdown.Stop();
+            if (_syncCts == cts) CancelSync();
+        }
+    }
+
+    private void EnterSyncCode_Click(object? sender, RoutedEventArgs e)
+    {
+        CancelSync();
+        SyncCodeInput.Text = "";
+        SetSyncUi(SyncUi.Joining);
+        SyncCodeInput.Focus();
+    }
+
+    private async void JoinSync_Click(object? sender, RoutedEventArgs e)
+    {
+        var code = new string((SyncCodeInput.Text ?? "").Where(char.IsDigit).ToArray());
+        if (code.Length != 4)
+        {
+            ShowImportStatus("Enter the 4-digit code shown on your other device.");
+            return;
+        }
+
+        _syncCts?.Cancel();
+        var cts = _syncCts = new CancellationTokenSource();
+        JoinSyncButton.IsEnabled = SyncCodeInput.IsEnabled = false;
+        ShowImportStatus($"Looking for the device showing {code}…");
+        try
+        {
+            var ours = SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
+            var theirs = await Task.Run(() => LanSync.JoinAsync(code, ours, cts.Token));
+            ShowImportStatus(ApplySync(SyncCode.Parse(theirs)));
+            if (_syncCts == cts) CancelSync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled by the user.
+        }
+        catch (Exception ex) when (ex is LanSyncException or FormatException)
+        {
+            if (!cts.IsCancellationRequested) ShowImportStatus(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            if (!cts.IsCancellationRequested) ShowImportStatus("Sync failed: " + ex.Message);
+        }
+        finally
+        {
+            JoinSyncButton.IsEnabled = SyncCodeInput.IsEnabled = true;
         }
     }
 }

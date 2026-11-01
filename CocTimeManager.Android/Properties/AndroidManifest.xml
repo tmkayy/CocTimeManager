@@ -8,5 +8,11 @@
     <!-- Alarms are wiped on reboot; re-schedule them -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Wi-Fi sync with a 4-digit code: local network sockets, and a multicast lock so the phone
+         receives the other device's broadcast when it is the one showing the code -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
     <application android:label="CoC Upgrade Timer" android:icon="@drawable/icon" />
 </manifest>

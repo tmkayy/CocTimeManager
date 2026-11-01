@@ -28,6 +28,16 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
   and home-village builder upgrades get 10× speed for that long (lab, pets and Builder Base aren't affected).
   Builder's Apprentice / Lab Assistant work that's already done is included in the export's timers, so just re-import
   after using them.
+- **Sync between devices** (no account or server):
+  - **Same Wi-Fi:** press **Show code** on one device; a 4-digit code appears. Press **Enter code** on the other
+    and type it. Both lists are merged both ways in a couple of seconds, directly over your network.
+    If it can't find the other device, swap which one shows the code: the device *showing* the code must accept
+    incoming connections on port 45871, so a desktop firewall can block it (Linux with ufw: `sudo ufw allow 45871`,
+    Windows asks the first time). The device *entering* the code works through firewalls.
+  - **Anywhere else:** press **Copy code**, send the long code to your other device yourself (messaging app,
+    notes, email) and press **Paste code** there.
+  - Merging never loses anything: upgrades you deleted stay deleted, the newest village import wins, and an
+    upgrade that already notified on one device won't notify again.
 - When an upgrade finishes: notification sound + system notification
   - **Desktop:** while the app is running (or the next time you open it, if it finished while closed).
     Closing the window keeps it running in the **system tray**; use **Quit** in the tray menu to exit.
@@ -57,8 +67,8 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.1.1-linux-x64.tar.gz
-cd CocUpgradeTimer-1.1.1-linux-x64
+tar -xzf CocUpgradeTimer-1.2.0-linux-x64.tar.gz
+cd CocUpgradeTimer-1.2.0-linux-x64
 ./install.sh
 ```
 
@@ -165,8 +175,8 @@ python3 scripts/update-game-names.py
 ```
 CocTimeManager/            shared UI and logic (Avalonia), icons, fonts, sound
   Data/game_names.json     game id -> name table for village imports
-  Models/                  upgrade time calculator, tracked-upgrade storage, village export import
-  Services/                notification + start-at-login interfaces implemented per platform
+  Models/                  upgrade time calculator, tracked-upgrade storage, village export import, sync codes
+  Services/                notifications, start at login (per platform), Wi-Fi sync with a 4-digit code
   Views/                   MainView (the app UI) and the desktop MainWindow
   Styles/                  colours, text styles, progress bar, ⓘ badges
 CocTimeManager.Desktop/    desktop entry point, sound/notification, start at login, single instance
@@ -176,5 +186,5 @@ scripts/build-release.sh   builds all release files
 scripts/update-game-names.py  regenerates Data/game_names.json
 ```
 
-Tracked upgrades are saved as JSON (times in UTC) in the user config folder
+Tracked upgrades are saved as JSON (times in UTC), with recent deletions in `deleted.json` for syncing, in the user config folder
 (`~/.config/CocTimeManager/upgrades.json` on Linux, `%APPDATA%\CocTimeManager\upgrades.json` on Windows).

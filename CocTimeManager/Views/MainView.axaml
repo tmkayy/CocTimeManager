@@ -54,7 +54,7 @@
                             </Border>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
-                              IsEnabled="{Binding #PotionCheck.IsChecked}">
+                              IsVisible="{Binding #PotionCheck.IsChecked}">
                             <StackPanel Grid.Column="0" Spacing="2">
                                 <NumericUpDown x:Name="PotionHoursInput" Minimum="0" Maximum="99" Value="1" Increment="1" FormatString="0" />
                                 <TextBlock Classes="hint" Text="hours active" />
@@ -82,7 +82,7 @@
                             </Border>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
-                              IsEnabled="{Binding #BiteCheck.IsChecked}">
+                              IsVisible="{Binding #BiteCheck.IsChecked}">
                             <StackPanel Grid.Column="0" Spacing="2">
                                 <NumericUpDown x:Name="BiteHoursInput" Minimum="0" Maximum="99" Value="1" Increment="1" FormatString="0" />
                                 <TextBlock Classes="hint" Text="hours active" />
@@ -138,8 +138,53 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Collapsed by default to save space -->
+                <Expander x:Name="SyncExpander" Classes="section">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Classes="label" Text="Sync with another device" />
+                            <Border Classes="info"
+                                    ToolTip.Tip="Both devices on the same Wi-Fi: press Show code on one and type that code on the other with Enter code. Both lists are merged both ways: nothing is lost, deleted upgrades stay deleted, and the newest village import wins. If it can't find the other device, swap which one shows the code (a firewall may be blocking). Not on the same Wi-Fi? Use Copy code / Paste code and send the code yourself.">
+                                <TextBlock Text="i" />
+                            </Border>
+                        </StackPanel>
+                    </Expander.Header>
+                    <StackPanel Spacing="8">
+                        <!-- Idle -->
+                        <Grid x:Name="SyncIdlePanel" ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" x:Name="ShowSyncCodeButton" Content="Show code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="1" x:Name="EnterSyncCodeButton" Content="Enter code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </Grid>
+
+                        <!-- Hosting: big code + countdown -->
+                        <StackPanel x:Name="SyncHostPanel" Spacing="4" IsVisible="False">
+                            <TextBlock x:Name="SyncCodeText" FontSize="44" FontWeight="Bold" LetterSpacing="12"
+                                       HorizontalAlignment="Center" Classes="accent" />
+                            <TextBlock x:Name="SyncHostHint" Classes="hint" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                            <Button x:Name="CancelSyncButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <!-- Joining: type the code -->
+                        <Grid x:Name="SyncJoinPanel" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" IsVisible="False">
+                            <TextBox Grid.Column="0" x:Name="SyncCodeInput" PlaceholderText="4-digit code" MaxLength="4"
+                                     FontSize="20" HorizontalContentAlignment="Center" TextInputOptions.ContentType="Digits" />
+                            <Button Grid.Column="1" x:Name="JoinSyncButton" Classes="primary" Content="Sync" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                            <Button Grid.Column="2" x:Name="CancelJoinButton" Content="✕" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                        </Grid>
+
+                        <!-- Fallback: send the long code yourself -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" x:Name="CopySyncButton" Content="Copy code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="1" x:Name="PasteSyncButton" Content="Paste code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
                 <!-- Desktop only (shown from code when autostart is supported) -->
-                <Border x:Name="AutostartCard" Classes="card" IsVisible="False">
+                <Expander x:Name="AutostartCard" Classes="section" IsVisible="False">
+                    <Expander.Header>
+                        <TextBlock Classes="label" Text="Settings" />
+                    </Expander.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <CheckBox x:Name="AutostartCheck" Content="Start at login" />
                         <Border Classes="info"
@@ -147,7 +192,7 @@
                             <TextBlock Text="i" />
                         </Border>
                     </StackPanel>
-                </Border>
+                </Expander>
         </StackPanel>
 
         <!-- ============ Results + tracker ============ -->
@@ -202,9 +247,11 @@
                                        Classes.done="{Binding IsDone}" />
                             <Button Grid.Column="2" Content="✕" Click="RemoveTracked_Click"
                                     VerticalAlignment="Center" Padding="8,2" />
-                            <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="upgrade"
-                                         Minimum="0" Maximum="100" Value="{Binding Progress}"
-                                         ShowProgressText="True" ProgressTextFormat="{}{0:0.0}%" />
+                            <ProgressBar Grid.Row="1" Grid.Column="0" Classes="upgrade"
+                                         Minimum="0" Maximum="100" Value="{Binding Progress}" VerticalAlignment="Center" />
+                            <!-- Beside the bar rather than on it: readable whatever the fill -->
+                            <TextBlock Grid.Row="1" Grid.Column="1" Classes="hint" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Text="{Binding Progress, StringFormat={}{0:0.0}%}" />
                         </Grid>
                         </Border>
                     </DataTemplate>

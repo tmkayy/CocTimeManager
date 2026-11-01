@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
-        <Border Padding="20" Background="#282233">
+        <Border Padding="20" Background="#282C34">
             <StackPanel Spacing="8">
                 <TextBlock Classes="h1" Text="Heading" />
                 <Border Classes="card">
@@ -15,16 +15,17 @@
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource OdBlue}" />
     </Style>
 
     <Style Selector="TextBlock.label">
-        <Setter Property="Opacity" Value="0.75" />
+        <Setter Property="Foreground" Value="#9DA5B4" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style Selector="TextBlock.hint">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Opacity" Value="0.6" />
+        <Setter Property="Foreground" Value="#7F848E" />
     </Style>
 
     <Style Selector="TextBlock.value">
@@ -33,12 +34,12 @@
     </Style>
 
     <Style Selector="TextBlock.accent">
-        <Setter Property="Foreground" Value="#7CE38B" />
+        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
         <Setter Property="FontSize" Value="22" />
     </Style>
 
     <Style Selector="TextBlock.done">
-        <Setter Property="Foreground" Value="#7CE38B" />
+        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
@@ -54,7 +55,7 @@
         <Setter Property="Height" Value="18" />
         <Setter Property="CornerRadius" Value="9" />
         <Setter Property="BorderThickness" Value="1.5" />
-        <Setter Property="BorderBrush" Value="#9A90AD" />
+        <Setter Property="BorderBrush" Value="{StaticResource OdComment}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Help" />
@@ -65,19 +66,19 @@
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontStyle" Value="Italic" />
-        <Setter Property="Foreground" Value="#9A90AD" />
+        <Setter Property="Foreground" Value="{StaticResource OdComment}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Border.info:pointerover">
-        <Setter Property="BorderBrush" Value="#E8A33D" />
+        <Setter Property="BorderBrush" Value="{StaticResource OdYellow}" />
     </Style>
     <Style Selector="Border.info:pointerover > TextBlock">
-        <Setter Property="Foreground" Value="#E8A33D" />
+        <Setter Property="Foreground" Value="{StaticResource OdYellow}" />
     </Style>
     <Style Selector="ProgressBar.upgrade">
-        <Setter Property="Foreground" Value="#4CC25E" />
-        <Setter Property="Background" Value="#2A2436" />
+        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
+        <Setter Property="Background" Value="{StaticResource OdDarker}" />
         <Setter Property="Height" Value="14" />
         <Setter Property="MinHeight" Value="14" />
         <Setter Property="CornerRadius" Value="7" />
@@ -85,17 +86,30 @@
 
     <Style Selector="ToolTip">
         <Setter Property="MaxWidth" Value="320" />
+        <Setter Property="Background" Value="{StaticResource OdDarker}" />
+        <Setter Property="BorderBrush" Value="{StaticResource OdBorder}" />
+        <Setter Property="Foreground" Value="{StaticResource OdText}" />
     </Style>
 
     <Style Selector="Border.card">
-        <Setter Property="Background" Value="#352E43" />
+        <Setter Property="Background" Value="{StaticResource CardBackground}" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="14" />
     </Style>
 
+    <!-- Collapsible card (drop-down section) -->
+    <Style Selector="Expander.section">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
     <Style Selector="Button.primary">
-        <Setter Property="Background" Value="#E8A33D" />
-        <Setter Property="Foreground" Value="#1E1A26" />
+        <Setter Property="Background" Value="{StaticResource OdBlue}" />
+        <Setter Property="Foreground" Value="{StaticResource OdBackground}" />
         <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#7DBFF3" />
+        <Setter Property="Foreground" Value="{StaticResource OdBackground}" />
     </Style>
 </Styles>

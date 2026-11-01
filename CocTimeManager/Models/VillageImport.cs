@@ -153,6 +153,7 @@ public static class VillageImport
                 Name = timer.Name,
                 ImportKey = timer.Key,
                 ImportedAt = export.ExportedAt,
+                UpdatedAt = nowUtc,
                 // The export only has the time left, so a new item's progress counts from the export.
                 StartedAt = prev?.StartedAt ?? (doneAlready ? timer.FinishAt : export.ExportedAt),
                 FinishAt = timer.FinishAt,

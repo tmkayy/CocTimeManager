@@ -39,6 +39,11 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
     public DateTime ImportedAt { get => _importedAt; set => _importedAt = ToUtc(value); }
     private DateTime _importedAt;
 
+    /// <summary>When this entry was created or last changed (UTC); the newer copy wins when syncing devices.
+    /// Entries saved before sync existed have the default (oldest) value.</summary>
+    public DateTime UpdatedAt { get => _updatedAt; set => _updatedAt = ToUtc(value); }
+    private DateTime _updatedAt;
+
     /// <summary>True once the "done" sound/notification has fired, so it only fires once.</summary>
     public bool Notified { get; set; }
 
@@ -80,9 +85,47 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
 
 public static class UpgradeStore
 {
-    private static readonly string FilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CocTimeManager", "upgrades.json");
+    private static readonly string Dir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CocTimeManager");
+    private static readonly string FilePath = Path.Combine(Dir, "upgrades.json");
+    private static readonly string DeletedPath = Path.Combine(Dir, "deleted.json");
+
+    /// <summary>How long deletions are remembered for syncing (so a deleted upgrade isn't brought back).</summary>
+    public static readonly TimeSpan DeletedRetention = TimeSpan.FromDays(60);
+
+    /// <summary>Ids of upgrades removed by hand -> when (UTC).</summary>
+    public static Dictionary<Guid, DateTime> LoadDeleted()
+    {
+        try
+        {
+            if (File.Exists(DeletedPath))
+            {
+                var cutoff = DateTime.UtcNow - DeletedRetention;
+                return (JsonSerializer.Deserialize<Dictionary<Guid, DateTime>>(File.ReadAllText(DeletedPath)) ?? [])
+                    .Select(kv => KeyValuePair.Create(kv.Key, kv.Value.ToUniversalTime()))
+                    .Where(kv => kv.Value > cutoff)
+                    .ToDictionary();
+            }
+        }
+        catch (Exception)
+        {
+            // Unreadable: forget old deletions rather than crash.
+        }
+        return [];
+    }
+
+    public static void SaveDeleted(Dictionary<Guid, DateTime> deleted)
+    {
+        try
+        {
+            Directory.CreateDirectory(Dir);
+            File.WriteAllText(DeletedPath, JsonSerializer.Serialize(deleted));
+        }
+        catch (Exception)
+        {
+            // Best effort.
+        }
+    }
 
     public static List<TrackedUpgrade> Load()
     {
