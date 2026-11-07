@@ -36,13 +36,30 @@ public partial class MainView : UserControl
         foreach (var info in this.GetLogicalDescendants().OfType<Border>().Where(b => b.Classes.Contains("info")))
             info.Tapped += (_, _) => ToolTip.SetIsOpen(info, !ToolTip.GetIsOpen(info));
 
-        BuilderBaseCheck.IsChecked = UpgradeStore.LoadSettings().ShowBuilderBase;
+        var settings = UpgradeStore.LoadSettings();
+        BuilderBaseCheck.IsChecked = settings.ShowBuilderBase;
         BuilderBaseCheck.IsCheckedChanged += (_, _) =>
         {
-            UpgradeStore.SaveSettings(new AppSettings { ShowBuilderBase = BuilderBaseCheck.IsChecked == true });
+            var s = UpgradeStore.LoadSettings();
+            s.ShowBuilderBase = BuilderBaseCheck.IsChecked == true;
+            UpgradeStore.SaveSettings(s);
             UpdateTrackedList();
         };
+        LightModeCheck.IsChecked = settings.LightMode;
+        LightModeCheck.IsCheckedChanged += (_, _) =>
+        {
+            var s = UpgradeStore.LoadSettings();
+            s.LightMode = LightModeCheck.IsChecked == true;
+            UpgradeStore.SaveSettings(s);
+            App.ApplyTheme(s.LightMode);
+        };
         _tracked.CollectionChanged += (_, _) => UpdateTrackedList();
+        VillageImport.ImportedElsewhere += message => Dispatcher.UIThread.Post(() =>
+        {
+            _tracked.Clear();
+            foreach (var u in UpgradeStore.Load()) _tracked.Add(u);
+            ShowImportStatus(message);
+        });
         UpdateTrackedList();
 
         foreach (var input in new[] { DaysInput, HoursInput, MinutesInput, PotionHoursInput, PotionMinutesInput,
@@ -102,12 +119,22 @@ public partial class MainView : UserControl
         if (narrow == _narrow) return;
         _narrow = narrow;
 
+        ManualExpander.IsVisible = narrow;
         if (narrow)
         {
+            // Phones: the tracked upgrades first, with everything for adding one by hand folded away below them.
             RootGrid.ColumnDefinitions = new ColumnDefinitions("*");
             RootGrid.RowDefinitions = new RowDefinitions("Auto,Auto");
             Grid.SetColumn(ResultsPanel, 0);
-            Grid.SetRow(ResultsPanel, 1);
+            Grid.SetRow(ResultsPanel, 0);
+            Grid.SetRow(InputsPanel, 1);
+
+            MoveTo(UpdateBanner, ResultsPanel, 0);
+            MoveTo(ManualPanel, ManualHost, 0);
+            MoveTo(ResultPanel, ManualHost, 1);
+            MoveTo(TrackButton, ManualHost, 2);
+            TrackButton.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+            TrackButton.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
         }
         else
         {
@@ -115,7 +142,21 @@ public partial class MainView : UserControl
             RootGrid.RowDefinitions = new RowDefinitions("Auto");
             Grid.SetColumn(ResultsPanel, 1);
             Grid.SetRow(ResultsPanel, 0);
+            Grid.SetRow(InputsPanel, 0);
+
+            MoveTo(UpdateBanner, InputsPanel, 0);
+            MoveTo(ManualPanel, InputsPanel, InputsPanel.Children.IndexOf(ManualExpander) + 1);
+            MoveTo(ResultPanel, ResultsPanel, 0);
+            MoveTo(TrackButton, TrackerHeader, TrackerHeader.Children.Count);
+            TrackButton.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
         }
+    }
+
+    private static void MoveTo(Control control, Panel target, int index)
+    {
+        if (control.Parent == target) return;
+        (control.Parent as Panel)?.Children.Remove(control);
+        target.Children.Insert(index, control);
     }
 
     private void CheckFinished()
@@ -221,6 +262,7 @@ public partial class MainView : UserControl
         UpgradeStore.Save(_tracked);
         Notifications.Current.Schedule(upgrade);
         NameBox.Text = "";
+        ManualExpander.IsExpanded = false; // phones: back to the list, where the new upgrade now is
     }
 
     private async void ImportButton_Click(object? sender, RoutedEventArgs e)
@@ -252,42 +294,7 @@ public partial class MainView : UserControl
         ImportStatus.IsVisible = true;
     }
 
-    private string ApplyImport(VillageExport export)
-    {
-        var now = DateTime.UtcNow;
-        var merge = VillageImport.Merge(_tracked, export, now);
-        if (merge is null)
-            return "That export is older than the last one you imported, so nothing was changed.";
-
-        foreach (var o in merge.Removed)
-        {
-            _tracked.Remove(o);
-            Notifications.Current.Cancel(o);
-        }
-        foreach (var u in merge.Added)
-        {
-            _tracked.Add(u);
-            if (!u.Notified) Notifications.Current.Schedule(u);
-        }
-        UpgradeStore.Save(_tracked);
-
-        var age = now - export.ExportedAt;
-        var ageText = age < TimeSpan.FromMinutes(1) ? "just now" : UpgradeCalculator.Format(age) + " ago";
-        var total = merge.Added.Count;
-        var hidden = BuilderBaseCheck.IsChecked == true ? 0 : merge.Added.Count(u => u.IsBuilderBase);
-        return $"Imported {total} running upgrade{(total == 1 ? "" : "s")} from {export.Tag} (exported {ageText}): " +
-               $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed." +
-               (export.BoostedCount > 0
-                   ? $" Builder Potion active ({UpgradeCalculator.Format(export.BuilderBoostLeft)} left at export): applied to {export.BoostedCount} builder upgrade{(export.BoostedCount == 1 ? "" : "s")}."
-                   : "") +
-               (export.LabBoostedCount > 0
-                   ? $" Research Potion active ({UpgradeCalculator.Format(export.LabBoostLeft)} left at export): applied to {export.LabBoostedCount} lab upgrade{(export.LabBoostedCount == 1 ? "" : "s")}."
-                   : "") +
-               (export.HelperCount > 0
-                   ? $" Helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."
-                   : "") +
-               (hidden > 0 ? $" {hidden} Builder Base upgrade{(hidden == 1 ? "" : "s")} hidden." : "");
-    }
+    private string ApplyImport(VillageExport export) => VillageImport.Apply(_tracked, export);
 
     private void RemoveTracked_Click(object? sender, RoutedEventArgs e)
     {

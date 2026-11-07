@@ -1,7 +1,7 @@
 # Importing from the game
 
 1. In Clash of Clans go to *Settings → More Settings → Export village data*. This copies JSON to the clipboard.
-2. In the app, press **Import village**.
+2. In the app, press **Import village**. On Android you can tap **Import** on the home screen widget instead.
 
 Every running building/hero/trap upgrade, lab research, pet upgrade and Builder Base upgrade is added with its exact
 finish time.

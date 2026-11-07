@@ -5,7 +5,7 @@
              xmlns:m="using:CocTimeManager.Models"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="620"
              x:Class="CocTimeManager.Views.MainView"
-             Background="{StaticResource PrimaryBackground}"
+             Background="{DynamicResource PrimaryBackground}"
              FontFamily="{StaticResource ContentControlThemeFontFamily}">
     <!-- The whole page scrolls; MainView.axaml.cs switches RootGrid between
          two columns (wide screens) and one stacked column (phones). -->
@@ -25,6 +25,15 @@
                     </Grid>
                 </Border>
 
+                <!-- Phones only: holds ManualPanel, ResultPanel and TrackButton, moved here from code -->
+                <Expander x:Name="ManualExpander" Classes="section" IsVisible="False">
+                    <Expander.Header>
+                        <TextBlock Classes="label" Text="Add upgrade manually" />
+                    </Expander.Header>
+                    <StackPanel x:Name="ManualHost" Spacing="12" />
+                </Expander>
+
+                <StackPanel x:Name="ManualPanel" Spacing="12">
                 <TextBlock Classes="h1" Text="New upgrade" />
 
                 <Border Classes="card">
@@ -149,6 +158,8 @@
                     </StackPanel>
                 </Border>
 
+                </StackPanel>
+
                 <!-- Collapsed by default to save space -->
                 <Expander x:Name="SyncExpander" Classes="section">
                     <Expander.Header>
@@ -196,6 +207,8 @@
                         <TextBlock Classes="label" Text="Settings" />
                     </Expander.Header>
                     <StackPanel Spacing="10">
+                    <CheckBox x:Name="LightModeCheck" Content="Light mode" />
+
                     <!-- Desktop only (shown from code when autostart is supported) -->
                     <StackPanel x:Name="AutostartRow" Orientation="Horizontal" Spacing="6" IsVisible="False">
                         <CheckBox x:Name="AutostartCheck" Content="Start at login" />
@@ -217,10 +230,11 @@
         </StackPanel>
 
         <!-- ============ Results + tracker ============ -->
-        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
-            <TextBlock Grid.Row="0" Classes="h1" Text="Result" />
+        <StackPanel x:Name="ResultsPanel" Grid.Column="1" Spacing="12">
+            <StackPanel x:Name="ResultPanel" Spacing="12">
+            <TextBlock Classes="h1" Text="Result" />
 
-            <Border Grid.Row="1" Classes="card">
+            <Border Classes="card">
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="10">
                     <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Local time now" />
                     <TextBlock Grid.Row="0" Grid.Column="1" x:Name="NowText" TextWrapping="Wrap" />
@@ -241,14 +255,17 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            </StackPanel>
+
+            <StackPanel x:Name="TrackerPanel" Spacing="12">
+            <Grid x:Name="TrackerHeader" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <TextBlock Grid.Column="0" Classes="h1" Text="Tracked upgrades" VerticalAlignment="Center" />
                 <Button Grid.Column="1" x:Name="ImportButton" Content="Import village"
                         ToolTip.Tip="In the game: Settings → More Settings → Export village data (copies it to the clipboard). Then press this to add every running upgrade, lab research and pet upgrade. Importing again updates them; ones that are no longer running are removed." />
                 <Button Grid.Column="2" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
             </Grid>
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="6">
                 <CheckBox x:Name="BuilderBaseCheck" Content="Builder Base upgrades" />
                 <Border Classes="info"
                         ToolTip.Tip="Off: imported Builder Base upgrades are hidden and don't notify you when they finish. They're still imported and synced, so turning this back on shows them again.">
@@ -256,9 +273,9 @@
                 </Border>
             </StackPanel>
 
-            <TextBlock Grid.Row="4" x:Name="ImportStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+            <TextBlock x:Name="ImportStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
 
-            <ItemsControl Grid.Row="5" x:Name="TrackedList">
+            <ItemsControl x:Name="TrackedList">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Spacing="8" />
@@ -270,7 +287,7 @@
                         <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
                             <StackPanel Grid.Column="0" Spacing="2">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding FinishText}" Classes="hint" />
+                                <TextBlock Text="{Binding FinishText}" Classes="hint" TextWrapping="Wrap" />
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding RemainingText}" VerticalAlignment="Center"
                                        Classes.done="{Binding IsDone}" />
@@ -286,7 +303,8 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </Grid>
+            </StackPanel>
+        </StackPanel>
     </Grid>
     </ScrollViewer>
 </UserControl>

@@ -5,67 +5,90 @@
 
     <!-- Resources come before Styles: the styles reference these colours while loading -->
     <Application.Resources>
-        <!-- One Dark colours, used by Styles/AppDefaultStyles.axaml -->
-        <Color x:Key="OdBackgroundColor">#282C34</Color>
-        <Color x:Key="OdDarkerColor">#21252B</Color>
-        <Color x:Key="OdCardColor">#2F343F</Color>
-        <Color x:Key="OdCardHoverColor">#353B47</Color>
-        <Color x:Key="OdBorderColor">#3E4451</Color>
-        <Color x:Key="OdTextColor">#ABB2BF</Color>
-        <Color x:Key="OdCommentColor">#5C6370</Color>
-        <Color x:Key="OdBlueColor">#61AFEF</Color>
-        <Color x:Key="OdGreenColor">#98C379</Color>
-        <Color x:Key="OdYellowColor">#E5C07B</Color>
-        <Color x:Key="OdRedColor">#E06C75</Color>
-        <Color x:Key="OdPurpleColor">#C678DD</Color>
+        <ResourceDictionary>
+            <!-- Used by Styles/AppDefaultStyles.axaml through DynamicResource, so switching theme applies at once.
+                 Dark is One Dark. Light is warm paper and lavender. The docs site uses the same colours
+                 (docs/stylesheets/extra.css). -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="OdBackground" Color="#282C34" />
+                    <SolidColorBrush x:Key="OdDarker" Color="#21252B" />
+                    <SolidColorBrush x:Key="OdCard" Color="#2F343F" />
+                    <SolidColorBrush x:Key="OdCardHover" Color="#353B47" />
+                    <SolidColorBrush x:Key="OdBorder" Color="#3E4451" />
+                    <SolidColorBrush x:Key="OdText" Color="#ABB2BF" />
+                    <SolidColorBrush x:Key="OdComment" Color="#5C6370" />
+                    <SolidColorBrush x:Key="OdBlue" Color="#61AFEF" />
+                    <SolidColorBrush x:Key="OdPrimaryHover" Color="#7DBFF3" />
+                    <SolidColorBrush x:Key="OdGreen" Color="#98C379" />
+                    <SolidColorBrush x:Key="OdYellow" Color="#E5C07B" />
+                    <SolidColorBrush x:Key="OdRed" Color="#E06C75" />
+                    <SolidColorBrush x:Key="OdPurple" Color="#C678DD" />
+                    <SolidColorBrush x:Key="OdLabel" Color="#9DA5B4" />
+                    <SolidColorBrush x:Key="OdHint" Color="#7F848E" />
+                    <SolidColorBrush x:Key="PrimaryBackground" Color="#282C34" />
+                    <SolidColorBrush x:Key="CardBackground" Color="#2F343F" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="#2F343F" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="#353B47" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="#353B47" />
+                    <SolidColorBrush x:Key="ExpanderContentBackground" Color="#2F343F" />
+                    <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#262A31" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#7F848E" />
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#262A31" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#3E4451" />
+                    <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled" Color="#262A31" />
+                    <SolidColorBrush x:Key="RepeatButtonBorderBrushDisabled" Color="#3E4451" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="OdBackground" Color="#FFF7EA" />
+                    <SolidColorBrush x:Key="OdDarker" Color="#D5CDC0" />
+                    <SolidColorBrush x:Key="OdCard" Color="#ECE3D6" />
+                    <SolidColorBrush x:Key="OdCardHover" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="OdBorder" Color="#C5BDB0" />
+                    <SolidColorBrush x:Key="OdText" Color="#100A03" />
+                    <SolidColorBrush x:Key="OdComment" Color="#5B5449" />
+                    <SolidColorBrush x:Key="OdBlue" Color="#4845A5" />
+                    <SolidColorBrush x:Key="OdPrimaryHover" Color="#5759A6" />
+                    <SolidColorBrush x:Key="OdGreen" Color="#356B22" />
+                    <SolidColorBrush x:Key="OdYellow" Color="#8A6A10" />
+                    <SolidColorBrush x:Key="OdRed" Color="#B03A48" />
+                    <SolidColorBrush x:Key="OdPurple" Color="#7A3FA0" />
+                    <SolidColorBrush x:Key="OdLabel" Color="#5B5449" />
+                    <SolidColorBrush x:Key="OdHint" Color="#5B5449" />
+                    <SolidColorBrush x:Key="PrimaryBackground" Color="#FFF7EA" />
+                    <SolidColorBrush x:Key="CardBackground" Color="#ECE3D6" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="#ECE3D6" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="ExpanderContentBackground" Color="#ECE3D6" />
+                    <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#968E82" />
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#C5BDB0" />
+                    <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled" Color="#E6DDD0" />
+                    <SolidColorBrush x:Key="RepeatButtonBorderBrushDisabled" Color="#C5BDB0" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
-        <SolidColorBrush x:Key="OdBackground" Color="{StaticResource OdBackgroundColor}" />
-        <SolidColorBrush x:Key="OdDarker" Color="{StaticResource OdDarkerColor}" />
-        <SolidColorBrush x:Key="OdCard" Color="{StaticResource OdCardColor}" />
-        <SolidColorBrush x:Key="OdCardHover" Color="{StaticResource OdCardHoverColor}" />
-        <SolidColorBrush x:Key="OdBorder" Color="{StaticResource OdBorderColor}" />
-        <SolidColorBrush x:Key="OdText" Color="{StaticResource OdTextColor}" />
-        <SolidColorBrush x:Key="OdComment" Color="{StaticResource OdCommentColor}" />
-        <SolidColorBrush x:Key="OdBlue" Color="{StaticResource OdBlueColor}" />
-        <SolidColorBrush x:Key="OdGreen" Color="{StaticResource OdGreenColor}" />
-        <SolidColorBrush x:Key="OdYellow" Color="{StaticResource OdYellowColor}" />
-        <SolidColorBrush x:Key="OdRed" Color="{StaticResource OdRedColor}" />
-        <SolidColorBrush x:Key="OdPurple" Color="{StaticResource OdPurpleColor}" />
+            <!-- Expanders look like the other cards -->
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="Transparent" />
+            <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
 
-        <SolidColorBrush x:Key="PrimaryBackground" Color="{StaticResource OdBackgroundColor}" />
-        <SolidColorBrush x:Key="CardBackground" Color="{StaticResource OdCardColor}" />
+            <!-- Checkboxes: no tick mark, a ticked box is just solid colour -->
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="Transparent" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="Transparent" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" Color="Transparent" />
 
-        <!-- Expanders look like the other cards -->
-        <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="{StaticResource OdCardColor}" />
-        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="{StaticResource OdCardHoverColor}" />
-        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="{StaticResource OdCardHoverColor}" />
-        <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="Transparent" />
-        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="Transparent" />
-        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="Transparent" />
-        <SolidColorBrush x:Key="ExpanderContentBackground" Color="{StaticResource OdCardColor}" />
-        <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
-
-        <!-- Disabled inputs (e.g. % boxes of unticked reductions): a dimmed version of the enabled look.
-             Fluent's default fills the text part with the same colour as its border, so the border vanished. -->
-        <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#262A31" />
-        <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#7F848E" />
-        <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#262A31" />
-        <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#3E4451" />
-        <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled" Color="#262A31" />
-        <SolidColorBrush x:Key="RepeatButtonBorderBrushDisabled" Color="#3E4451" />
-
-        <!-- Checkboxes: no tick mark, a ticked box is just solid blue -->
-        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="Transparent" />
-        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="Transparent" />
-        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="Transparent" />
-        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" Color="Transparent" />
-
-        <!-- Maple Mono everywhere: overrides the font FluentTheme uses for controls -->
-        <FontFamily x:Key="ContentControlThemeFontFamily">avares://CocTimeManager/fonts#Maple Mono</FontFamily>
+            <!-- Maple Mono everywhere: overrides the font FluentTheme uses for controls -->
+            <FontFamily x:Key="ContentControlThemeFontFamily">avares://CocTimeManager/fonts#Maple Mono</FontFamily>
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
-        <!-- One Dark palette for the built-in controls (text boxes, number inputs, buttons, checkboxes, ...) -->
+        <!-- Palettes for the built-in controls (text boxes, number inputs, buttons, checkboxes, ...) -->
         <FluentTheme>
             <FluentTheme.Palettes>
                 <ColorPaletteResources x:Key="Dark"
@@ -93,6 +116,31 @@
                                        ChromeDisabledLow="#5C6370"
                                        ListLow="#2C313A"
                                        ListMedium="#3E4451" />
+                <ColorPaletteResources x:Key="Light"
+                                       Accent="#4845A5"
+                                       RegionColor="#FFF7EA"
+                                       ErrorText="#B03A48"
+                                       BaseHigh="#100A03"
+                                       BaseMediumHigh="#2A241B"
+                                       BaseMedium="#5B5449"
+                                       BaseMediumLow="#968E82"
+                                       BaseLow="#C5BDB0"
+                                       AltHigh="#FFFBF3"
+                                       AltMediumHigh="#FFFBF3"
+                                       AltMedium="#FFFBF3"
+                                       AltMediumLow="#FFFBF3"
+                                       AltLow="#FFFBF3"
+                                       ChromeHigh="#C5BDB0"
+                                       ChromeMedium="#D5CDC0"
+                                       ChromeMediumLow="#E6DDD0"
+                                       ChromeLow="#ECE3D6"
+                                       ChromeAltLow="#100A03"
+                                       ChromeGray="#968E82"
+                                       ChromeWhite="#FFFBF3"
+                                       ChromeDisabledHigh="#D5CDC0"
+                                       ChromeDisabledLow="#968E82"
+                                       ListLow="#E6DDD0"
+                                       ListMedium="#D5CDC0" />
             </FluentTheme.Palettes>
         </FluentTheme>
         <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>

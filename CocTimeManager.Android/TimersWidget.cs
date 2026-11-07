@@ -20,8 +20,8 @@ namespace CocTimeManager.Android;
 [MetaData("android.appwidget.provider", Resource = "@xml/timers_widget_info")]
 public class TimersWidget : AppWidgetProvider
 {
-    // Keep in step with Resources/layout: the row's height and the root's padding plus the "+N more" line.
-    private const int RowHeightDp = 42, ReservedHeightDp = 40, DefaultRows = 4;
+    // Keep in step with Resources/layout: the row's height and the root's padding plus the footer.
+    private const int RowHeightDp = 42, ReservedHeightDp = 48, DefaultRows = 4;
 
     public override void OnUpdate(Context? context, AppWidgetManager? manager, int[]? ids)
     {
@@ -70,8 +70,11 @@ public class TimersWidget : AppWidgetProvider
         if (openApp is not null)
             views.SetOnClickPendingIntent(Resource.Id.widget_root,
                 PendingIntent.GetActivity(context, 0, openApp, PendingIntentFlags.Immutable));
+        views.SetOnClickPendingIntent(Resource.Id.widget_import,
+            PendingIntent.GetActivity(context, 1, new Intent(context, typeof(WidgetImportActivity)), PendingIntentFlags.Immutable));
 
         views.SetViewVisibility(Resource.Id.widget_empty, timers.Count == 0 ? ViewStates.Visible : ViewStates.Gone);
+        views.SetViewVisibility(Resource.Id.widget_rows, timers.Count == 0 ? ViewStates.Gone : ViewStates.Visible);
         views.RemoveAllViews(Resource.Id.widget_rows);
 
         // Chronometers count against the time since boot, so a reboot needs a redraw (AndroidApp does that).
@@ -88,8 +91,7 @@ public class TimersWidget : AppWidgetProvider
         }
 
         var hidden = timers.Count - maxRows;
-        views.SetViewVisibility(Resource.Id.widget_more, hidden > 0 ? ViewStates.Visible : ViewStates.Gone);
-        if (hidden > 0) views.SetTextViewText(Resource.Id.widget_more, $"+{hidden} more");
+        views.SetTextViewText(Resource.Id.widget_more, hidden > 0 ? $"+{hidden} more" : "");
 
         return views;
     }

@@ -6,7 +6,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using CocTimeManager.Models;
 using CocTimeManager.Services;
 using CocTimeManager.Views;
 
@@ -20,6 +22,12 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        ApplyTheme(UpgradeStore.LoadSettings().LightMode);
+    }
+
+    public static void ApplyTheme(bool lightMode)
+    {
+        if (Current is { } app) app.RequestedThemeVariant = lightMode ? ThemeVariant.Light : ThemeVariant.Dark;
     }
 
     public override void OnFrameworkInitializationCompleted()

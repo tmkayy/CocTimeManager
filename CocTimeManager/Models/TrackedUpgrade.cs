@@ -90,6 +90,8 @@ public sealed class AppSettings
 {
     /// <summary>Off: Builder Base upgrades stay stored (for import and sync) but are hidden and don't notify.</summary>
     public bool ShowBuilderBase { get; set; } = true;
+
+    public bool LightMode { get; set; }
 }
 
 public static class UpgradeStore

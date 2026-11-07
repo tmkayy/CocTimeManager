@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Avalonia.Platform;
+using CocTimeManager.Services;
 
 namespace CocTimeManager.Models;
 
@@ -71,8 +71,8 @@ public static class VillageImport
     {
         try
         {
-            using var s = AssetLoader.Open(new Uri("avares://CocTimeManager/Data/game_names.json"));
-            return JsonSerializer.Deserialize<Dictionary<string, string>>(s) ?? [];
+            using var s = typeof(VillageImport).Assembly.GetManifestResourceStream("game_names.json");
+            return s is null ? [] : JsonSerializer.Deserialize<Dictionary<string, string>>(s) ?? [];
         }
         catch (Exception)
         {
@@ -190,6 +190,58 @@ public static class VillageImport
                 return (level, h.TryGetProperty("helper_cooldown", out var cd) && cd.TryGetInt64(out var seconds)
                     ? TimeSpan.FromSeconds(seconds) : TimeSpan.Zero);
         return default;
+    }
+
+    /// <summary>Raised with the status message after an import that didn't go through a list the app is showing
+    /// (the Android widget), so a running app can reload instead of later saving over it.</summary>
+    public static event Action<string>? ImportedElsewhere;
+
+    /// <summary>Imports clipboard text into the saved list, for when the app's list isn't at hand.
+    /// Returns a status message; throws <see cref="FormatException"/> if the text isn't an export.</summary>
+    public static string ImportIntoStore(string json)
+    {
+        var message = Apply(UpgradeStore.Load(), Parse(json));
+        ImportedElsewhere?.Invoke(message);
+        return message;
+    }
+
+    /// <summary>Merges <paramref name="export"/> into <paramref name="tracked"/>, updates notifications and saves.
+    /// Returns a status message.</summary>
+    public static string Apply(IList<TrackedUpgrade> tracked, VillageExport export)
+    {
+        var now = DateTime.UtcNow;
+        var merge = Merge(tracked, export, now);
+        if (merge is null)
+            return "That export is older than the last one you imported, so nothing was changed.";
+
+        foreach (var o in merge.Removed)
+        {
+            tracked.Remove(o);
+            Notifications.Current.Cancel(o);
+        }
+        foreach (var u in merge.Added)
+        {
+            tracked.Add(u);
+            if (!u.Notified) Notifications.Current.Schedule(u);
+        }
+        UpgradeStore.Save(tracked);
+
+        var age = now - export.ExportedAt;
+        var ageText = age < TimeSpan.FromMinutes(1) ? "just now" : UpgradeCalculator.Format(age) + " ago";
+        var total = merge.Added.Count;
+        var hidden = UpgradeStore.LoadSettings().ShowBuilderBase ? 0 : merge.Added.Count(u => u.IsBuilderBase);
+        return $"Imported {total} running upgrade{(total == 1 ? "" : "s")} from {export.Tag} (exported {ageText}): " +
+               $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed." +
+               (export.BoostedCount > 0
+                   ? $" Builder Potion active ({UpgradeCalculator.Format(export.BuilderBoostLeft)} left at export): applied to {export.BoostedCount} builder upgrade{(export.BoostedCount == 1 ? "" : "s")}."
+                   : "") +
+               (export.LabBoostedCount > 0
+                   ? $" Research Potion active ({UpgradeCalculator.Format(export.LabBoostLeft)} left at export): applied to {export.LabBoostedCount} lab upgrade{(export.LabBoostedCount == 1 ? "" : "s")}."
+                   : "") +
+               (export.HelperCount > 0
+                   ? $" Helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."
+                   : "") +
+               (hidden > 0 ? $" {hidden} Builder Base upgrade{(hidden == 1 ? "" : "s")} hidden." : "");
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
-        <Border Padding="20" Background="#282C34">
+        <Border Padding="20" Background="{DynamicResource OdBackground}">
             <StackPanel Spacing="8">
                 <TextBlock Classes="h1" Text="Heading" />
                 <Border Classes="card">
@@ -15,17 +15,17 @@
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource OdBlue}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdBlue}" />
     </Style>
 
     <Style Selector="TextBlock.label">
-        <Setter Property="Foreground" Value="#9DA5B4" />
+        <Setter Property="Foreground" Value="{DynamicResource OdLabel}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style Selector="TextBlock.hint">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Foreground" Value="#7F848E" />
+        <Setter Property="Foreground" Value="{DynamicResource OdHint}" />
     </Style>
 
     <Style Selector="TextBlock.value">
@@ -34,12 +34,12 @@
     </Style>
 
     <Style Selector="TextBlock.accent">
-        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdGreen}" />
         <Setter Property="FontSize" Value="22" />
     </Style>
 
     <Style Selector="TextBlock.done">
-        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdGreen}" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
@@ -55,7 +55,7 @@
         <Setter Property="Height" Value="18" />
         <Setter Property="CornerRadius" Value="9" />
         <Setter Property="BorderThickness" Value="1.5" />
-        <Setter Property="BorderBrush" Value="{StaticResource OdComment}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource OdComment}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Help" />
@@ -66,19 +66,19 @@
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontStyle" Value="Italic" />
-        <Setter Property="Foreground" Value="{StaticResource OdComment}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdComment}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Border.info:pointerover">
-        <Setter Property="BorderBrush" Value="{StaticResource OdYellow}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource OdYellow}" />
     </Style>
     <Style Selector="Border.info:pointerover > TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource OdYellow}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdYellow}" />
     </Style>
     <Style Selector="ProgressBar.upgrade">
-        <Setter Property="Foreground" Value="{StaticResource OdGreen}" />
-        <Setter Property="Background" Value="{StaticResource OdDarker}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdGreen}" />
+        <Setter Property="Background" Value="{DynamicResource OdDarker}" />
         <Setter Property="Height" Value="14" />
         <Setter Property="MinHeight" Value="14" />
         <Setter Property="CornerRadius" Value="7" />
@@ -86,20 +86,20 @@
 
     <Style Selector="ToolTip">
         <Setter Property="MaxWidth" Value="320" />
-        <Setter Property="Background" Value="{StaticResource OdDarker}" />
-        <Setter Property="BorderBrush" Value="{StaticResource OdBorder}" />
-        <Setter Property="Foreground" Value="{StaticResource OdText}" />
+        <Setter Property="Background" Value="{DynamicResource OdDarker}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource OdBorder}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdText}" />
     </Style>
 
     <Style Selector="Border.card">
-        <Setter Property="Background" Value="{StaticResource CardBackground}" />
+        <Setter Property="Background" Value="{DynamicResource CardBackground}" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="14" />
     </Style>
 
     <!-- "Update available" banner: card with a blue edge -->
     <Style Selector="Border.card.update">
-        <Setter Property="BorderBrush" Value="{StaticResource OdBlue}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource OdBlue}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
@@ -110,12 +110,12 @@
     </Style>
 
     <Style Selector="Button.primary">
-        <Setter Property="Background" Value="{StaticResource OdBlue}" />
-        <Setter Property="Foreground" Value="{StaticResource OdBackground}" />
+        <Setter Property="Background" Value="{DynamicResource OdBlue}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdBackground}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#7DBFF3" />
-        <Setter Property="Foreground" Value="{StaticResource OdBackground}" />
+        <Setter Property="Background" Value="{DynamicResource OdPrimaryHover}" />
+        <Setter Property="Foreground" Value="{DynamicResource OdBackground}" />
     </Style>
 </Styles>

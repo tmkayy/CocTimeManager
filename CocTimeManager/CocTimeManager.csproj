@@ -10,7 +10,8 @@
         <AvaloniaResource Include="icons\**" />
         <AvaloniaResource Include="fonts\**" />
         <AvaloniaResource Include="snd\**" />
-        <AvaloniaResource Include="Data\**" />
+        <!-- Plain embedded resource: the widget's import can run before Avalonia is up -->
+        <EmbeddedResource Include="Data\game_names.json" LogicalName="game_names.json" />
     </ItemGroup>
 
     <ItemGroup>

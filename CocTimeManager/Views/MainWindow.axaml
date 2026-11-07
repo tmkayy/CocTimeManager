@@ -3,7 +3,7 @@
         xmlns:v="using:CocTimeManager.Views"
         x:Class="CocTimeManager.Views.MainWindow"
         Width="900" Height="680" MinWidth="380" MinHeight="520"
-        Background="{StaticResource PrimaryBackground}"
+        Background="{DynamicResource PrimaryBackground}"
         Icon="avares://CocTimeManager/icons/hammer.png"
         Title="CoC Upgrade Timer">
     <v:MainView />

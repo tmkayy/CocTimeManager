@@ -37,12 +37,25 @@ and find *Upgrade timers*; resize it to fit more rows. It follows the Builder Ba
 changes, such as after an import. Android versions that allow lock screen widgets can place it there too, but most
 phones don't.
 
+To update it without opening the app, copy your village data in the game and tap **Import** on the widget. See
+[Importing from the game](importing.md).
+
+## Phone layout
+
+On a phone the tracked upgrades come first. The entry form, boosts, time reductions and result are folded into
+**Add upgrade manually** below them.
+
 ## In-app updates
 
 The app checks for a new release on startup (or press *Settings → Check for updates*) and shows an **Update** button.
 The download is verified against the release's `SHA256SUMS.txt`. Windows and Linux replace themselves and restart; on
 Android the system installer opens (the first time, Android asks you to allow installs from this app). Builds run from
 source don't update themselves.
+
+## Light and dark mode
+
+The app is dark by default. Tick **Light mode** under *Settings* to switch, and it remembers your choice. The home screen
+widget stays dark.
 
 ## Where your data is saved
 
