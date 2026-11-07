@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CocTimeManager.Models;
@@ -26,17 +27,18 @@ public static class UpgradeCalculator
     public const int ResearchPotionSpeedMultiplier = 24;
 
     /// <summary>
-    /// Real time to get through <paramref name="work"/> (time left at normal speed) when boosts already running
-    /// add to the normal 1x speed until they end. Rates add up: a 10x potion (+9) and a helper adding 8 give 18x.
+    /// Real time to get through <paramref name="work"/> (time left at normal speed) when boosts, timed from now,
+    /// add to the normal 1x speed between Start and End. Rates add up: a 10x potion (+9) and a helper adding 8 give 18x.
     /// </summary>
-    public static TimeSpan TimeToFinish(TimeSpan work, params (TimeSpan Left, int ExtraSpeed)[] boosts)
+    public static TimeSpan TimeToFinish(TimeSpan work, IReadOnlyCollection<(TimeSpan Start, TimeSpan End, int ExtraSpeed)> boosts)
     {
         var elapsed = TimeSpan.Zero;
         var remaining = work;
-        foreach (var end in boosts.Select(b => b.Left).Where(l => l > TimeSpan.Zero).Distinct().Order())
+        var changes = boosts.SelectMany(b => new[] { b.Start, b.End }).Where(t => t > TimeSpan.Zero).Distinct().Order();
+        foreach (var next in changes)
         {
-            var speed = 1 + boosts.Where(b => b.Left > elapsed).Sum(b => b.ExtraSpeed);
-            var used = TimeSpan.FromTicks(Math.Min((end - elapsed).Ticks, remaining.Ticks / speed));
+            var speed = 1 + boosts.Where(b => b.Start <= elapsed && b.End > elapsed).Sum(b => b.ExtraSpeed);
+            var used = TimeSpan.FromTicks(Math.Min((next - elapsed).Ticks, remaining.Ticks / speed));
             remaining -= used * speed;
             elapsed += used;
         }

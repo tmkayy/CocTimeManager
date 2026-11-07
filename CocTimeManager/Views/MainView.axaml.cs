@@ -284,7 +284,7 @@ public partial class MainView : UserControl
                    ? $" Research Potion active ({UpgradeCalculator.Format(export.LabBoostLeft)} left at export): applied to {export.LabBoostedCount} lab upgrade{(export.LabBoostedCount == 1 ? "" : "s")}."
                    : "") +
                (export.HelperCount > 0
-                   ? $" Active helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."
+                   ? $" Helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."
                    : "") +
                (hidden > 0 ? $" {hidden} Builder Base upgrade{(hidden == 1 ? "" : "s")} hidden." : "");
     }

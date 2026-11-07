@@ -27,7 +27,8 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
   **Boosts active when you export are taken into account**, using the time left listed in the export: a Builder
   Potion gives home-village builder upgrades 10× speed and a Research Potion gives lab research 24× (pets and Builder
   Base aren't affected). A Builder's Apprentice or Lab Assistant adds its level on top for the rest of its session,
-  e.g. a level 8 Apprentice during a Builder Potion is 18×. Builder Bites and Study Soup aren't read from exports yet.
+  e.g. a level 8 Apprentice during a Builder Potion is 18×. If you've set a helper to reapply itself, its future
+  sessions (every 23 hours) are counted too. Builder Bites and Study Soup aren't read from exports yet.
   Untick **Builder Base upgrades** above the list to hide those timers and silence their notifications; they're
   still imported and synced, so ticking it shows them again.
 - **Sync between devices** (no account or server):

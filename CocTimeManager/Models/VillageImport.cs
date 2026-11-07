@@ -14,7 +14,7 @@ public sealed record ImportedTimer(string Key, string Name, DateTime FinishAt);
 /// <param name="BoostedCount">How many timers the active Builder Potion was applied to.</param>
 /// <param name="LabBoostLeft">Research Potion time left at export (zero if none was active).</param>
 /// <param name="LabBoostedCount">How many timers the active Research Potion was applied to.</param>
-/// <param name="HelperCount">How many timers an active helper was applied to.</param>
+/// <param name="HelperCount">How many timers finish sooner thanks to a helper session, now or repeating later.</param>
 public sealed record VillageExport(string Tag, DateTime ExportedAt, List<ImportedTimer> Timers,
                                    TimeSpan BuilderBoostLeft, int BoostedCount,
                                    TimeSpan LabBoostLeft, int LabBoostedCount, int HelperCount);
@@ -37,6 +37,10 @@ public sealed record ImportMerge(List<TrackedUpgrade> Removed, List<TrackedUpgra
 /// timers 24× (including the <c>extra</c> slot), the one with the level 8 Apprentice 18× and the one with the
 /// level 12 Lab Assistant 36× until <c>helper_timer</c> ran out; pets and the Builder Base dropped 1×.
 /// </para>
+/// <para>
+/// <c>helper_recurrent</c> is the player's choice to have the helper reapply itself to that item whenever
+/// <c>helper_cooldown</c> ends. The cooldown counts from the start of a session, so sessions repeat every 23 h.
+/// </para>
 /// </summary>
 public static class VillageImport
 {
@@ -55,6 +59,8 @@ public static class VillageImport
     private static readonly HashSet<string> LabSections = ["units", "spells", "siege_machines"];
 
     private const long BuilderApprenticeId = 93000000, LabAssistantId = 93000001;
+
+    private static readonly TimeSpan HelperSession = TimeSpan.FromHours(1), HelperCooldown = TimeSpan.FromHours(23);
 
     private static Dictionary<string, string>? _names;
 
@@ -100,8 +106,8 @@ public static class VillageImport
 
             var builderBoost = BoostLeft(root, "builder_boost");
             var labBoost = BoostLeft(root, "lab_boost");
-            var apprenticeLevel = HelperLevel(root, BuilderApprenticeId);
-            var assistantLevel = HelperLevel(root, LabAssistantId);
+            var apprentice = FindHelper(root, BuilderApprenticeId);
+            var assistant = FindHelper(root, LabAssistantId);
             int boosted = 0, labBoosted = 0, helped = 0;
 
             var timers = new List<ImportedTimer>();
@@ -125,21 +131,23 @@ public static class VillageImport
 
                     var isBuilder = BuilderSections.Contains(section.Name);
                     var isLab = LabSections.Contains(section.Name);
-                    var potion = isBuilder ? (builderBoost, UpgradeCalculator.PotionSpeedMultiplier - 1)
+                    var work = TimeSpan.FromSeconds(secondsLeft);
+                    var (potionLeft, potionExtra) = isBuilder ? (builderBoost, UpgradeCalculator.PotionSpeedMultiplier - 1)
                         : isLab ? (labBoost, UpgradeCalculator.ResearchPotionSpeedMultiplier - 1)
                         : (TimeSpan.Zero, 0);
-                    var helperLeft = item.TryGetProperty("helper_timer", out var htEl) && htEl.TryGetInt64(out var ht) && ht > 0
-                        ? TimeSpan.FromSeconds(ht) : TimeSpan.Zero;
-                    var helper = (helperLeft, isBuilder ? apprenticeLevel : isLab ? assistantLevel : 0);
+                    List<(TimeSpan, TimeSpan, int)> potion = [(TimeSpan.Zero, potionLeft, potionExtra)];
+                    var boosts = potion.Concat(HelperSessions(item, work, isBuilder ? apprentice : isLab ? assistant : default)).ToList();
 
-                    if (potion.Item1 > TimeSpan.Zero)
+                    if (potionLeft > TimeSpan.Zero)
                     {
                         if (isBuilder) boosted++;
                         else labBoosted++;
                     }
-                    if (helper.Item1 > TimeSpan.Zero && helper.Item2 > 0) helped++;
 
-                    var finish = exportedAt + UpgradeCalculator.TimeToFinish(TimeSpan.FromSeconds(secondsLeft), potion, helper);
+                    var timeLeft = UpgradeCalculator.TimeToFinish(work, boosts);
+                    if (timeLeft < UpgradeCalculator.TimeToFinish(work, potion)) helped++;
+
+                    var finish = exportedAt + timeLeft;
                     timers.Add(new ImportedTimer($"{section.Name}:{id}:{lvl}", label, finish));
                 }
             }
@@ -154,15 +162,34 @@ public static class VillageImport
         boosts.TryGetProperty(name, out var el) && el.TryGetInt64(out var seconds) && seconds > 0
             ? TimeSpan.FromSeconds(seconds) : TimeSpan.Zero;
 
-    private static int HelperLevel(JsonElement root, long helperId)
+    /// <summary>The helper's session running on this item, plus future ones if it's set to reapply itself.
+    /// Work never takes longer than its time at normal speed, so sessions after that can't matter.</summary>
+    private static IEnumerable<(TimeSpan, TimeSpan, int)> HelperSessions(JsonElement item, TimeSpan work,
+                                                                         (int Level, TimeSpan Cooldown) helper)
     {
-        if (!root.TryGetProperty("helpers", out var helpers) || helpers.ValueKind != JsonValueKind.Array) return 0;
+        if (helper.Level <= 0) yield break;
+
+        if (item.TryGetProperty("helper_timer", out var timerEl) && timerEl.TryGetInt64(out var left) && left > 0)
+            yield return (TimeSpan.Zero, TimeSpan.FromSeconds(left), helper.Level);
+
+        if (!item.TryGetProperty("helper_recurrent", out var recurrent) || recurrent.ValueKind != JsonValueKind.True ||
+            helper.Cooldown <= TimeSpan.Zero)
+            yield break;
+
+        for (var start = helper.Cooldown; start < work; start += HelperCooldown)
+            yield return (start, start + HelperSession, helper.Level);
+    }
+
+    private static (int Level, TimeSpan Cooldown) FindHelper(JsonElement root, long helperId)
+    {
+        if (!root.TryGetProperty("helpers", out var helpers) || helpers.ValueKind != JsonValueKind.Array) return default;
         foreach (var h in helpers.EnumerateArray())
             if (h.ValueKind == JsonValueKind.Object &&
                 h.TryGetProperty("data", out var id) && id.TryGetInt64(out var i) && i == helperId &&
                 h.TryGetProperty("lvl", out var lvl) && lvl.TryGetInt32(out var level))
-                return level;
-        return 0;
+                return (level, h.TryGetProperty("helper_cooldown", out var cd) && cd.TryGetInt64(out var seconds)
+                    ? TimeSpan.FromSeconds(seconds) : TimeSpan.Zero);
+        return default;
     }
 
     /// <summary>
