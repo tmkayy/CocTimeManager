@@ -13,11 +13,3 @@
 **Preface: All of this is vibe coded using Claude Code.**
 
 </div>
-
-## License
-
-The code is licensed under the [GNU General Public License v3.0](LICENSE). The bundled Maple Mono fonts keep their own
-[SIL Open Font License](CocTimeManager/fonts/OFL.txt).
-
-Unofficial fan project, not affiliated with or endorsed by Supercell. Clash of Clans names and artwork belong to
-Supercell and aren't covered by this license.
