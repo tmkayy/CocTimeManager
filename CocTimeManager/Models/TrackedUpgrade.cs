@@ -112,6 +112,9 @@ public static class UpgradeStore
     private static readonly string DeletedPath = Path.Combine(Dir, "deleted.json");
     private static readonly string SettingsPath = Path.Combine(Dir, "settings.json");
 
+    /// <summary>Raised after the upgrades or settings are saved.</summary>
+    public static event Action? Changed;
+
     public static AppSettings LoadSettings()
     {
         try
@@ -137,6 +140,7 @@ public static class UpgradeStore
         {
             // Best effort.
         }
+        Changed?.Invoke();
     }
 
     /// <summary>False for Builder Base upgrades while they're toggled off. Read from disk because Android's
@@ -211,5 +215,6 @@ public static class UpgradeStore
         {
             // Saving is best effort.
         }
+        Changed?.Invoke();
     }
 }

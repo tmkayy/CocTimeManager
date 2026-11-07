@@ -4,6 +4,7 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using Android.Net.Wifi;
+using CocTimeManager.Models;
 using CocTimeManager.Services;
 
 namespace CocTimeManager.Android;
@@ -17,6 +18,11 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
     {
         Notifications.Current = new AndroidNotificationService(this);
         Updater.Installer = new AndroidUpdateInstaller(this);
+
+        // This also runs when the boot receiver starts the process, which resets the widget's countdowns after a reboot.
+        UpgradeStore.Changed += () => TimersWidget.UpdateAll(this);
+        TimersWidget.UpdateAll(this);
+
         LanSync.AcquireBroadcastLock = () =>
         {
             // Many phones drop incoming broadcast packets to save power unless an app holds this lock.

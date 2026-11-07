@@ -31,6 +31,9 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
   sessions (every 23 hours) are counted too. Builder Bites and Study Soup aren't read from exports yet.
   Untick **Builder Base upgrades** above the list to hide those timers and silence their notifications; they're
   still imported and synced, so ticking it shows them again.
+- **Home screen widget (Android)**: running upgrades with live countdowns and finish times, soonest first. Long-press
+  your home screen, choose *Widgets* and find *Upgrade timers*; resize it to fit more rows. It follows the Builder Base
+  toggle. Android versions that allow lock screen widgets can place it there too, but most phones don't.
 - **Sync between devices** (no account or server):
   - **Same Wi-Fi:** press **Show code** on one device; a 4-digit code appears. Press **Enter code** on the other
     and type it. Both lists are merged both ways in a couple of seconds, directly over your network.
@@ -74,8 +77,8 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.2.1-linux-x64.tar.gz
-cd CocUpgradeTimer-1.2.1-linux-x64
+tar -xzf CocUpgradeTimer-1.3.0-linux-x64.tar.gz
+cd CocUpgradeTimer-1.3.0-linux-x64
 ./install.sh
 ```
 
