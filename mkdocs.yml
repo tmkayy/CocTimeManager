@@ -45,6 +45,7 @@ markdown_extensions:
 
 nav:
   - Home: README.md
+  - ⬇ Download: https://github.com/tmkayy/CocTimeManager/releases/latest
   - Install: install.md
   - Features: features.md
   - Importing from the game: importing.md

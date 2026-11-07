@@ -1,5 +1,7 @@
 # Install
 
+<a class="md-button md-button--primary download-button" href="https://github.com/tmkayy/CocTimeManager/releases/latest">⬇ Download the latest release</a>
+
 Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeManager/releases/latest). No .NET install needed.
 
 | Platform | File | How to install |

@@ -1,5 +1,7 @@
 # CoC Upgrade Timer docs
 
+<a class="md-button md-button--primary download-button" href="https://github.com/tmkayy/CocTimeManager/releases/latest">⬇ Download the latest release</a>
+
 A small Clash of Clans upgrade calculator and tracker built with [Avalonia UI](https://avaloniaui.net/) (.NET).
 It runs on Windows, Linux, macOS and Android.
 

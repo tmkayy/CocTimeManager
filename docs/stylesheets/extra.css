@@ -167,6 +167,30 @@ input,
   color: var(--md-typeset-a-color);
 }
 
+/* Download button */
+[data-md-color-scheme="default"] {
+  --md-primary-bg-color: #FFF7EA;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-bg-color: #282C34;
+}
+
+.md-typeset .download-button {
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  padding: 0.6em 1.4em;
+}
+
+.md-typeset .download-button:focus,
+.md-typeset .download-button:hover {
+  background-color: var(--site-link-hover);
+  border-color: var(--site-link-hover);
+  color: var(--md-primary-bg-color);
+}
+
 /* Code and tables */
 /* The background goes on the pre, not the code inside it. Blocks wide enough to scroll otherwise keep painting the
    previous theme's background after the theme toggle, leaving black text on black until the page is reloaded. */
