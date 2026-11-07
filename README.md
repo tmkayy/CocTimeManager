@@ -4,7 +4,7 @@
 
 *Clash of Clans upgrade calculator and tracker for Windows, Linux, macOS and Android*
 
-## [📖 Read the docs!](docs/README.md)
+## [📖 Read the docs!](https://tmkayy.github.io/CocTimeManager/)
 
 [![Latest release](https://img.shields.io/github/v/release/tmkayy/CocTimeManager?style=for-the-badge)](https://github.com/tmkayy/CocTimeManager/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/tmkayy/CocTimeManager/total?style=for-the-badge)](https://github.com/tmkayy/CocTimeManager/releases)

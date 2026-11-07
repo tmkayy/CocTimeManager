@@ -1,0 +1,198 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap");
+
+/* Light: warm paper and lavender. Keep in step with the Light palette in CocTimeManager/App.axaml. */
+[data-md-color-scheme="default"] {
+  --site-surface: #ECE3D6;
+  --site-border: #E6DDD0;
+  --site-border-hover: #AFA79B;
+  --site-header-fg: #2A241B;
+  --site-link-hover: #5759A6;
+
+  --md-primary-fg-color: #262067;
+  --md-primary-fg-color--light: #5759A6;
+  --md-primary-fg-color--dark: #12004A;
+  --md-accent-fg-color: #262067;
+  --md-accent-fg-color--transparent: rgb(38 32 103 / 10%);
+
+  --md-default-bg-color: #FFF7EA;
+  --md-default-fg-color: #100A03;
+  --md-default-fg-color--light: #5B5449;
+  --md-default-fg-color--lighter: #968E82;
+  --md-default-fg-color--lightest: #C5BDB0;
+
+  --md-code-bg-color: #ECE3D6;
+  --md-code-fg-color: #100A03;
+  --md-typeset-color: #100A03;
+  --md-typeset-a-color: #4845A5;
+  --md-typeset-table-color: #D5CDC0;
+  --md-admonition-bg-color: #ECE3D6;
+  --md-footer-bg-color: #ECE3D6;
+  --md-footer-bg-color--dark: #ECE3D6;
+  --md-footer-fg-color: #100A03;
+  --md-footer-fg-color--light: #5B5449;
+  --md-footer-fg-color--lighter: #5B5449;
+}
+
+/* Dark: One Dark, the same colours as the app. Keep in step with the Dark palette in CocTimeManager/App.axaml. */
+[data-md-color-scheme="slate"] {
+  --site-surface: #2F343F;
+  --site-border: #3E4451;
+  --site-border-hover: #5C6370;
+  --site-header-fg: #ABB2BF;
+  --site-link-hover: #7DBFF3;
+
+  --md-primary-fg-color: #61AFEF;
+  --md-primary-fg-color--light: #7DBFF3;
+  --md-primary-fg-color--dark: #4B98D8;
+  --md-accent-fg-color: #61AFEF;
+  --md-accent-fg-color--transparent: rgb(97 175 239 / 10%);
+
+  --md-default-bg-color: #282C34;
+  --md-default-fg-color: #ABB2BF;
+  --md-default-fg-color--light: #9DA5B4;
+  --md-default-fg-color--lighter: #7F848E;
+  --md-default-fg-color--lightest: #5C6370;
+
+  --md-code-bg-color: #21252B;
+  --md-code-fg-color: #ABB2BF;
+  --md-typeset-color: #ABB2BF;
+  --md-typeset-a-color: #61AFEF;
+  --md-typeset-table-color: #3E4451;
+  --md-admonition-bg-color: #2F343F;
+  --md-footer-bg-color: #21252B;
+  --md-footer-bg-color--dark: #21252B;
+  --md-footer-fg-color: #ABB2BF;
+  --md-footer-fg-color--light: #9DA5B4;
+  --md-footer-fg-color--lighter: #9DA5B4;
+}
+
+/* Fonts */
+body,
+input,
+.md-typeset,
+.md-nav,
+.md-search__input {
+  font-family: "Space Mono", monospace;
+}
+
+.md-typeset code,
+.md-typeset pre,
+.md-typeset kbd {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Links */
+.md-typeset a:focus,
+.md-typeset a:hover {
+  color: var(--site-link-hover);
+}
+
+/* Header: blends into the page, with rounded controls */
+.md-header,
+.md-header--shadow {
+  background-color: var(--md-default-bg-color);
+  box-shadow: none;
+  color: var(--site-header-fg);
+}
+
+.md-header__title {
+  margin-left: 0.5rem !important;
+  font-weight: 700;
+}
+
+.md-source {
+  color: var(--site-header-fg);
+}
+
+.md-header__button.md-logo img {
+  height: 1.6rem;
+  width: 1.6rem;
+}
+
+.md-header__option .md-header__button {
+  background-color: var(--site-surface);
+  border: 0.15rem solid var(--site-border);
+  border-radius: 1rem;
+  padding: 0.15rem;
+}
+
+.md-header__option .md-header__button:hover {
+  border-color: var(--site-border-hover);
+}
+
+/* Search box */
+@media screen and (min-width: 60em) {
+  .md-search__form {
+    background-color: var(--site-surface);
+    border: 0.15rem solid var(--site-border);
+    border-radius: 1rem;
+  }
+
+  .md-search__form:hover {
+    background-color: var(--site-surface);
+    border-color: var(--site-border-hover);
+  }
+
+  .md-search__form .md-search__input,
+  .md-search__form .md-search__input:hover {
+    background: transparent;
+    color: var(--md-default-fg-color);
+  }
+
+  .md-search__form .md-search__input::placeholder,
+  .md-search__form .md-search__icon {
+    color: var(--md-default-fg-color--light);
+  }
+}
+
+/* Sidebars: rounded cards on wide screens */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar__inner {
+    background-color: var(--site-surface);
+    border: 0.15rem solid var(--site-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .md-nav__title {
+    background: transparent;
+    box-shadow: none;
+    color: var(--md-default-fg-color);
+    font-weight: 700;
+  }
+}
+
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active {
+  color: var(--md-typeset-a-color);
+}
+
+/* Code and tables */
+/* The background goes on the pre, not the code inside it. Blocks wide enough to scroll otherwise keep painting the
+   previous theme's background after the theme toggle, leaving black text on black until the page is reloaded. */
+.md-typeset pre {
+  background-color: var(--md-code-bg-color);
+  border-radius: 0.5rem;
+}
+
+.md-typeset pre > code {
+  background-color: transparent;
+  border-radius: 0.5rem;
+}
+
+.md-typeset table:not([class]) {
+  border: 0.05rem solid var(--site-border);
+  border-radius: 0.5rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--site-surface);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  background-color: var(--md-admonition-bg-color);
+  border: 0.15rem solid var(--site-border);
+  border-radius: 0.75rem;
+  box-shadow: none;
+}

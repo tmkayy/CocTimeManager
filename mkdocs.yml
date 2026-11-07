@@ -1,0 +1,53 @@
+site_name: CoC Upgrade Timer
+site_description: Clash of Clans upgrade calculator and tracker for Windows, Linux, macOS and Android
+site_url: https://tmkayy.github.io/CocTimeManager/
+repo_url: https://github.com/tmkayy/CocTimeManager
+repo_name: GitHub
+edit_uri: ""
+copyright: Unofficial fan project, not affiliated with or endorsed by Supercell.
+
+theme:
+  name: material
+  logo: assets/hammer.png
+  favicon: assets/hammer.png
+  font: false # loaded in stylesheets/extra.css
+  icon:
+    repo: fontawesome/brands/git-alt
+  features:
+    - content.code.copy
+    - navigation.tracking
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+
+nav:
+  - Home: README.md
+  - Install: install.md
+  - Features: features.md
+  - Importing from the game: importing.md
+  - Syncing devices: sync.md
+  - How the maths works: calculations.md
+  - Building from source: building.md
