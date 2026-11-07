@@ -21,7 +21,8 @@ public class UpgradeAlarmReceiver : BroadcastReceiver
 
         upgrade.Notified = true;
         UpgradeStore.Save(all);
-        AndroidNotificationService.Show(context, upgrade.NotificationId, upgrade.Name);
+        if (UpgradeStore.ShouldNotify(upgrade))
+            AndroidNotificationService.Show(context, upgrade.NotificationId, upgrade.Name);
     }
 }
 
@@ -43,7 +44,8 @@ public class BootReceiver : BroadcastReceiver
             {
                 u.Notified = true;
                 changed = true;
-                AndroidNotificationService.Show(context, u.NotificationId, u.Name);
+                if (UpgradeStore.ShouldNotify(u))
+                    AndroidNotificationService.Show(context, u.NotificationId, u.Name);
             }
             else
             {

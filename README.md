@@ -24,10 +24,12 @@ Start tracking it and you get a progress bar, a live countdown, and a sound + sy
   and Builder Base upgrade is added with its exact finish time. Import again any time to sync: entries keep their
   notifications, finished or cancelled ones are removed, and upgrades you added by hand are left alone.
   Progress bars for newly imported items count from the export (the export only says how much time is left).
-  A **Builder Potion that's active** when you export is taken into account: the export lists the potion's time left,
-  and home-village builder upgrades get 10× speed for that long (lab, pets and Builder Base aren't affected).
-  Builder's Apprentice / Lab Assistant work that's already done is included in the export's timers, so just re-import
-  after using them.
+  **Boosts active when you export are taken into account**, using the time left listed in the export: a Builder
+  Potion gives home-village builder upgrades 10× speed and a Research Potion gives lab research 24× (pets and Builder
+  Base aren't affected). A Builder's Apprentice or Lab Assistant adds its level on top for the rest of its session,
+  e.g. a level 8 Apprentice during a Builder Potion is 18×. Builder Bites and Study Soup aren't read from exports yet.
+  Untick **Builder Base upgrades** above the list to hide those timers and silence their notifications; they're
+  still imported and synced, so ticking it shows them again.
 - **Sync between devices** (no account or server):
   - **Same Wi-Fi:** press **Show code** on one device; a 4-digit code appears. Press **Enter code** on the other
     and type it. Both lists are merged both ways in a couple of seconds, directly over your network.

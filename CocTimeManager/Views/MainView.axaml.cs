@@ -36,7 +36,14 @@ public partial class MainView : UserControl
         foreach (var info in this.GetLogicalDescendants().OfType<Border>().Where(b => b.Classes.Contains("info")))
             info.Tapped += (_, _) => ToolTip.SetIsOpen(info, !ToolTip.GetIsOpen(info));
 
-        TrackedList.ItemsSource = _tracked;
+        BuilderBaseCheck.IsChecked = UpgradeStore.LoadSettings().ShowBuilderBase;
+        BuilderBaseCheck.IsCheckedChanged += (_, _) =>
+        {
+            UpgradeStore.SaveSettings(new AppSettings { ShowBuilderBase = BuilderBaseCheck.IsChecked == true });
+            UpdateTrackedList();
+        };
+        _tracked.CollectionChanged += (_, _) => UpdateTrackedList();
+        UpdateTrackedList();
 
         foreach (var input in new[] { DaysInput, HoursInput, MinutesInput, PotionHoursInput, PotionMinutesInput,
                                       BiteHoursInput, BiteMinutesInput,
@@ -81,6 +88,12 @@ public partial class MainView : UserControl
         CheckFinished(); // upgrades that finished while the app was closed
     }
 
+    /// <summary>Hidden upgrades stay in <see cref="_tracked"/> so imports and device sync still see them.</summary>
+    private void UpdateTrackedList() =>
+        TrackedList.ItemsSource = BuilderBaseCheck.IsChecked == true
+            ? _tracked
+            : _tracked.Where(t => !t.IsBuilderBase).ToList();
+
     private bool? _narrow;
 
     private void ApplyLayout(double width)
@@ -116,7 +129,7 @@ public partial class MainView : UserControl
         {
             var alreadyNotified = onDisk.Contains(t.Id);
             t.Notified = true;
-            if (!alreadyNotified) Notifications.Current.UpgradeFinished(t);
+            if (!alreadyNotified && UpgradeStore.ShouldNotify(t)) Notifications.Current.UpgradeFinished(t);
         }
         UpgradeStore.Save(_tracked);
     }
@@ -261,11 +274,19 @@ public partial class MainView : UserControl
         var age = now - export.ExportedAt;
         var ageText = age < TimeSpan.FromMinutes(1) ? "just now" : UpgradeCalculator.Format(age) + " ago";
         var total = merge.Added.Count;
+        var hidden = BuilderBaseCheck.IsChecked == true ? 0 : merge.Added.Count(u => u.IsBuilderBase);
         return $"Imported {total} running upgrade{(total == 1 ? "" : "s")} from {export.Tag} (exported {ageText}): " +
                $"{total - merge.Kept} new, {merge.Kept} updated, {merge.Removed.Count - merge.Kept} removed." +
                (export.BoostedCount > 0
                    ? $" Builder Potion active ({UpgradeCalculator.Format(export.BuilderBoostLeft)} left at export): applied to {export.BoostedCount} builder upgrade{(export.BoostedCount == 1 ? "" : "s")}."
-                   : "");
+                   : "") +
+               (export.LabBoostedCount > 0
+                   ? $" Research Potion active ({UpgradeCalculator.Format(export.LabBoostLeft)} left at export): applied to {export.LabBoostedCount} lab upgrade{(export.LabBoostedCount == 1 ? "" : "s")}."
+                   : "") +
+               (export.HelperCount > 0
+                   ? $" Active helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."
+                   : "") +
+               (hidden > 0 ? $" {hidden} Builder Base upgrade{(hidden == 1 ? "" : "s")} hidden." : "");
     }
 
     private void RemoveTracked_Click(object? sender, RoutedEventArgs e)

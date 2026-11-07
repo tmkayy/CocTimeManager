@@ -11,9 +11,13 @@ namespace CocTimeManager.Models;
 public sealed record ImportedTimer(string Key, string Name, DateTime FinishAt);
 
 /// <param name="BuilderBoostLeft">Builder Potion time left at export (zero if none was active).</param>
-/// <param name="BoostedCount">How many timers the active potion was applied to.</param>
+/// <param name="BoostedCount">How many timers the active Builder Potion was applied to.</param>
+/// <param name="LabBoostLeft">Research Potion time left at export (zero if none was active).</param>
+/// <param name="LabBoostedCount">How many timers the active Research Potion was applied to.</param>
+/// <param name="HelperCount">How many timers an active helper was applied to.</param>
 public sealed record VillageExport(string Tag, DateTime ExportedAt, List<ImportedTimer> Timers,
-                                   TimeSpan BuilderBoostLeft, int BoostedCount);
+                                   TimeSpan BuilderBoostLeft, int BoostedCount,
+                                   TimeSpan LabBoostLeft, int LabBoostedCount, int HelperCount);
 
 /// <summary>What an import changes: <see cref="Removed"/> are all previously imported entries,
 /// <see cref="Added"/> their replacements; <see cref="Kept"/> of them continue an earlier entry.</summary>
@@ -24,10 +28,14 @@ public sealed record ImportMerge(List<TrackedUpgrade> Removed, List<TrackedUpgra
 /// Every running upgrade has <c>"timer"</c> = seconds left at the export's <c>"timestamp"</c> (Unix, UTC).
 /// Sections ending in "2" (buildings2, units2, ...) are the Builder Base.
 /// <para>
-/// <c>timer</c> is work left at normal speed: an active Builder Potion is NOT taken into account
-/// (checked against two exports 24 min apart, the second 17 s into a potion: home builder timers dropped
-/// 9 × 17 s more than the rest). The potion's time left is in <c>boosts.builder_boost</c> (seconds), so
-/// home-village builder upgrades get 10× speed for that long, then normal speed.
+/// <c>timer</c> is work left at normal speed: active boosts are NOT taken into account. Time left on potions
+/// is in <c>boosts.builder_boost</c> and <c>boosts.lab_boost</c> (seconds); an item a helper is working on has
+/// <c>helper_timer</c> (seconds), and the helper's level is in the <c>helpers</c> section.
+/// </para>
+/// <para>
+/// Speeds add up. Measured across exports while both potions ran: other builder timers dropped 10× and lab
+/// timers 24× (including the <c>extra</c> slot), the one with the level 8 Apprentice 18× and the one with the
+/// level 12 Lab Assistant 36× until <c>helper_timer</c> ran out; pets and the Builder Base dropped 1×.
 /// </para>
 /// </summary>
 public static class VillageImport
@@ -39,9 +47,14 @@ public static class VillageImport
         ["guardians"] = "Guardian", ["decos"] = "Decoration",
     };
 
-    /// <summary>Home-village sections worked on by builders, so sped up by a Builder Potion.
-    /// Not the lab (units, spells, siege machines), pets, equipment or the Builder Base.</summary>
+    /// <summary>Home-village sections worked on by builders, so sped up by a Builder Potion and the Apprentice.
+    /// Not the lab, pets, equipment or the Builder Base.</summary>
     private static readonly HashSet<string> BuilderSections = ["buildings", "traps", "heroes", "guardians"];
+
+    /// <summary>Home-village lab sections, so sped up by a Research Potion and the Lab Assistant.</summary>
+    private static readonly HashSet<string> LabSections = ["units", "spells", "siege_machines"];
+
+    private const long BuilderApprenticeId = 93000000, LabAssistantId = 93000001;
 
     private static Dictionary<string, string>? _names;
 
@@ -85,10 +98,11 @@ public static class VillageImport
             var tag = root.TryGetProperty("tag", out var tagEl) && tagEl.ValueKind == JsonValueKind.String
                 ? tagEl.GetString() ?? "" : "";
 
-            var builderBoost = root.TryGetProperty("boosts", out var boostsEl) && boostsEl.ValueKind == JsonValueKind.Object &&
-                               boostsEl.TryGetProperty("builder_boost", out var bbEl) && bbEl.TryGetInt64(out var bb) && bb > 0
-                ? TimeSpan.FromSeconds(bb) : TimeSpan.Zero;
-            var boosted = 0;
+            var builderBoost = BoostLeft(root, "builder_boost");
+            var labBoost = BoostLeft(root, "lab_boost");
+            var apprenticeLevel = HelperLevel(root, BuilderApprenticeId);
+            var assistantLevel = HelperLevel(root, LabAssistantId);
+            int boosted = 0, labBoosted = 0, helped = 0;
 
             var timers = new List<ImportedTimer>();
             foreach (var section in root.EnumerateObject().Where(p => p.Value.ValueKind == JsonValueKind.Array))
@@ -109,20 +123,46 @@ public static class VillageImport
                         : $"{Kinds.GetValueOrDefault(baseSection, "Item")} #{id}"; // newer than our name table
                     var label = $"{name} → {lvl + 1}{(builderBase ? " (Builder Base)" : "")}";
 
-                    var finish = exportedAt.AddSeconds(secondsLeft);
-                    if (builderBoost > TimeSpan.Zero && BuilderSections.Contains(section.Name))
-                    {
-                        finish = UpgradeCalculator.Calculate(TimeSpan.FromSeconds(secondsLeft), [], builderBoost,
-                                                             TimeSpan.Zero, exportedAt).FinishAt;
-                        boosted++;
-                    }
+                    var isBuilder = BuilderSections.Contains(section.Name);
+                    var isLab = LabSections.Contains(section.Name);
+                    var potion = isBuilder ? (builderBoost, UpgradeCalculator.PotionSpeedMultiplier - 1)
+                        : isLab ? (labBoost, UpgradeCalculator.ResearchPotionSpeedMultiplier - 1)
+                        : (TimeSpan.Zero, 0);
+                    var helperLeft = item.TryGetProperty("helper_timer", out var htEl) && htEl.TryGetInt64(out var ht) && ht > 0
+                        ? TimeSpan.FromSeconds(ht) : TimeSpan.Zero;
+                    var helper = (helperLeft, isBuilder ? apprenticeLevel : isLab ? assistantLevel : 0);
 
+                    if (potion.Item1 > TimeSpan.Zero)
+                    {
+                        if (isBuilder) boosted++;
+                        else labBoosted++;
+                    }
+                    if (helper.Item1 > TimeSpan.Zero && helper.Item2 > 0) helped++;
+
+                    var finish = exportedAt + UpgradeCalculator.TimeToFinish(TimeSpan.FromSeconds(secondsLeft), potion, helper);
                     timers.Add(new ImportedTimer($"{section.Name}:{id}:{lvl}", label, finish));
                 }
             }
 
-            return new VillageExport(tag, exportedAt, timers.OrderBy(t => t.FinishAt).ToList(), builderBoost, boosted);
+            return new VillageExport(tag, exportedAt, timers.OrderBy(t => t.FinishAt).ToList(),
+                                     builderBoost, boosted, labBoost, labBoosted, helped);
         }
+    }
+
+    private static TimeSpan BoostLeft(JsonElement root, string name) =>
+        root.TryGetProperty("boosts", out var boosts) && boosts.ValueKind == JsonValueKind.Object &&
+        boosts.TryGetProperty(name, out var el) && el.TryGetInt64(out var seconds) && seconds > 0
+            ? TimeSpan.FromSeconds(seconds) : TimeSpan.Zero;
+
+    private static int HelperLevel(JsonElement root, long helperId)
+    {
+        if (!root.TryGetProperty("helpers", out var helpers) || helpers.ValueKind != JsonValueKind.Array) return 0;
+        foreach (var h in helpers.EnumerateArray())
+            if (h.ValueKind == JsonValueKind.Object &&
+                h.TryGetProperty("data", out var id) && id.TryGetInt64(out var i) && i == helperId &&
+                h.TryGetProperty("lvl", out var lvl) && lvl.TryGetInt32(out var level))
+                return level;
+        return 0;
     }
 
     /// <summary>

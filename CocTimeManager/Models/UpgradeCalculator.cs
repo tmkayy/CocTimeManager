@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace CocTimeManager.Models;
 
@@ -20,6 +21,28 @@ public static class UpgradeCalculator
 
     /// <summary>A Builder Bite makes builders work this many times faster while it is active.</summary>
     public const int BiteSpeedMultiplier = 2;
+
+    /// <summary>A Research Potion makes the lab work this many times faster while it is active.</summary>
+    public const int ResearchPotionSpeedMultiplier = 24;
+
+    /// <summary>
+    /// Real time to get through <paramref name="work"/> (time left at normal speed) when boosts already running
+    /// add to the normal 1x speed until they end. Rates add up: a 10x potion (+9) and a helper adding 8 give 18x.
+    /// </summary>
+    public static TimeSpan TimeToFinish(TimeSpan work, params (TimeSpan Left, int ExtraSpeed)[] boosts)
+    {
+        var elapsed = TimeSpan.Zero;
+        var remaining = work;
+        foreach (var end in boosts.Select(b => b.Left).Where(l => l > TimeSpan.Zero).Distinct().Order())
+        {
+            var speed = 1 + boosts.Where(b => b.Left > elapsed).Sum(b => b.ExtraSpeed);
+            var used = TimeSpan.FromTicks(Math.Min((end - elapsed).Ticks, remaining.Ticks / speed));
+            remaining -= used * speed;
+            elapsed += used;
+        }
+        // Round up to a whole second, the game never finishes early.
+        return TimeSpan.FromSeconds(Math.Ceiling((elapsed + remaining).TotalSeconds));
+    }
 
     /// <param name="baseTime">Full upgrade time as shown in game, before any reductions.</param>
     /// <param name="percentReductions">Flat time reductions (Gold Pass, Hammer Jam, ...) in percent, e.g. 20 for 20%.

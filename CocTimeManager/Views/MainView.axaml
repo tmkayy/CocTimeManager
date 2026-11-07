@@ -217,7 +217,7 @@
         </StackPanel>
 
         <!-- ============ Results + tracker ============ -->
-        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
+        <Grid x:Name="ResultsPanel" Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
             <TextBlock Grid.Row="0" Classes="h1" Text="Result" />
 
             <Border Grid.Row="1" Classes="card">
@@ -248,9 +248,17 @@
                 <Button Grid.Column="2" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
             </Grid>
 
-            <TextBlock Grid.Row="3" x:Name="ImportStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6">
+                <CheckBox x:Name="BuilderBaseCheck" Content="Builder Base upgrades" />
+                <Border Classes="info"
+                        ToolTip.Tip="Off: imported Builder Base upgrades are hidden and don't notify you when they finish. They're still imported and synced, so turning this back on shows them again.">
+                    <TextBlock Text="i" />
+                </Border>
+            </StackPanel>
 
-            <ItemsControl Grid.Row="4" x:Name="TrackedList">
+            <TextBlock Grid.Row="4" x:Name="ImportStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+
+            <ItemsControl Grid.Row="5" x:Name="TrackedList">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Spacing="8" />

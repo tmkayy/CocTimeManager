@@ -35,6 +35,9 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
     /// The next import replaces these, so they stay in sync with the game.</summary>
     public string? ImportKey { get; set; }
 
+    /// <summary>Imported from a Builder Base section (buildings2, units2, ...); see <see cref="VillageImport"/>.</summary>
+    [JsonIgnore] public bool IsBuilderBase => ImportKey?.Split(':')[0].EndsWith('2') == true;
+
     /// <summary>Export time of the import that created/updated this entry (UTC).</summary>
     public DateTime ImportedAt { get => _importedAt; set => _importedAt = ToUtc(value); }
     private DateTime _importedAt;
@@ -83,6 +86,12 @@ public sealed class TrackedUpgrade : INotifyPropertyChanged
     }
 }
 
+public sealed class AppSettings
+{
+    /// <summary>Off: Builder Base upgrades stay stored (for import and sync) but are hidden and don't notify.</summary>
+    public bool ShowBuilderBase { get; set; } = true;
+}
+
 public static class UpgradeStore
 {
     private static readonly string Dir = Path.Combine(ConfigRoot(), "CocTimeManager");
@@ -101,6 +110,38 @@ public static class UpgradeStore
     }
     private static readonly string FilePath = Path.Combine(Dir, "upgrades.json");
     private static readonly string DeletedPath = Path.Combine(Dir, "deleted.json");
+    private static readonly string SettingsPath = Path.Combine(Dir, "settings.json");
+
+    public static AppSettings LoadSettings()
+    {
+        try
+        {
+            if (File.Exists(SettingsPath))
+                return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
+        }
+        catch (Exception)
+        {
+            // Unreadable: use the defaults rather than crash.
+        }
+        return new AppSettings();
+    }
+
+    public static void SaveSettings(AppSettings settings)
+    {
+        try
+        {
+            Directory.CreateDirectory(Dir);
+            File.WriteAllText(SettingsPath, JsonSerializer.Serialize(settings));
+        }
+        catch (Exception)
+        {
+            // Best effort.
+        }
+    }
+
+    /// <summary>False for Builder Base upgrades while they're toggled off. Read from disk because Android's
+    /// alarm receivers run without the app.</summary>
+    public static bool ShouldNotify(TrackedUpgrade upgrade) => !upgrade.IsBuilderBase || LoadSettings().ShowBuilderBase;
 
     /// <summary>How long deletions are remembered for syncing (so a deleted upgrade isn't brought back).</summary>
     public static readonly TimeSpan DeletedRetention = TimeSpan.FromDays(60);
