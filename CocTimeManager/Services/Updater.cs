@@ -29,7 +29,10 @@ public interface IUpdateInstaller
     Task InstallAsync(string downloadedFile);
 }
 
-public sealed record UpdateInfo(Version Version, string Tag, string Notes, string AssetName, string AssetUrl, string? ChecksumsUrl);
+/// <param name="AssetUrl">The release file's normal download link.</param>
+/// <param name="AssetApiUrl">The same file through GitHub's API, used when the normal link fails.</param>
+public sealed record UpdateInfo(Version Version, string Tag, string Notes, string AssetName, string AssetUrl, string AssetApiUrl,
+                                string? ChecksumsUrl, string? ChecksumsApiUrl);
 
 /// <summary>
 /// In-app updates from this project's GitHub releases (via the API, the user never opens the website).
@@ -74,14 +77,16 @@ public static class Updater
         if (latest is null || latest <= Normalize(current)) return null;
 
         var assets = root.GetProperty("assets").EnumerateArray()
-            .Select(a => (name: a.GetProperty("name").GetString() ?? "", url: a.GetProperty("browser_download_url").GetString() ?? ""))
+            .Select(a => (name: a.GetProperty("name").GetString() ?? "", url: a.GetProperty("browser_download_url").GetString() ?? "",
+                          api: a.GetProperty("url").GetString() ?? ""))
             .ToList();
         var asset = assets.FirstOrDefault(a => a.name.EndsWith(assetSuffix, StringComparison.OrdinalIgnoreCase));
         if (asset.name.Length == 0) return null;
         var sums = assets.FirstOrDefault(a => a.name == "SHA256SUMS.txt");
 
         var notes = root.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "";
-        return new UpdateInfo(latest, tag, notes, asset.name, asset.url, sums.name is null ? null : sums.url);
+        return new UpdateInfo(latest, tag, notes, asset.name, asset.url, asset.api,
+                              sums.name is null ? null : sums.url, sums.name is null ? null : sums.api);
     }
 
     /// <summary>Downloads the update into <paramref name="dir"/> and verifies its SHA-256. Returns the file path.</summary>
@@ -90,15 +95,17 @@ public static class Updater
         if (update.ChecksumsUrl is null)
             throw new InvalidOperationException("The release has no SHA256SUMS.txt, so the download can't be verified.");
 
-        var expected = ParseChecksums(await Http.GetStringAsync(update.ChecksumsUrl, ct))
+        string sumsText;
+        using (var sumsResp = await GetFileAsync(update.ChecksumsUrl, update.ChecksumsApiUrl, ct))
+            sumsText = await sumsResp.Content.ReadAsStringAsync(ct);
+        var expected = ParseChecksums(sumsText)
             .GetValueOrDefault(update.AssetName)
             ?? throw new InvalidOperationException($"SHA256SUMS.txt has no entry for {update.AssetName}.");
 
         Directory.CreateDirectory(dir);
         var path = Path.Combine(dir, update.AssetName);
-        using (var resp = await Http.GetAsync(update.AssetUrl, HttpCompletionOption.ResponseHeadersRead, ct))
+        using (var resp = await GetFileAsync(update.AssetUrl, update.AssetApiUrl, ct))
         {
-            resp.EnsureSuccessStatusCode();
             var total = resp.Content.Headers.ContentLength;
             await using var src = await resp.Content.ReadAsStreamAsync(ct);
             await using var dst = File.Create(path);
@@ -122,6 +129,38 @@ public static class Updater
             throw new InvalidOperationException("The download doesn't match its checksum, so it wasn't installed. Try again.");
         }
         return path;
+    }
+
+    /// <summary>
+    /// Starts downloading a release file: the normal link first, then the same file through GitHub's API.
+    /// The normal links sometimes time out on GitHub's side (504) while the API still serves the file.
+    /// Returns a successful response with only the headers read.
+    /// </summary>
+    private static async Task<HttpResponseMessage> GetFileAsync(string url, string? apiUrl, CancellationToken ct)
+    {
+        Exception? firstError = null;
+        try
+        {
+            var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (resp.IsSuccessStatusCode || string.IsNullOrEmpty(apiUrl)) return resp.EnsureSuccessStatusCode();
+            firstError = new HttpRequestException($"{(int)resp.StatusCode} ({resp.ReasonPhrase})");
+            resp.Dispose();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested &&
+                                   !string.IsNullOrEmpty(apiUrl))
+        {
+            firstError = ex;
+        }
+
+        // The API sends the file itself (via a redirect) when asked for application/octet-stream.
+        using var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+        request.Headers.Accept.Clear();
+        request.Headers.Accept.ParseAdd("application/octet-stream");
+        var fallback = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (fallback.IsSuccessStatusCode) return fallback;
+        var code = $"{(int)fallback.StatusCode} ({fallback.ReasonPhrase})";
+        fallback.Dispose();
+        throw new HttpRequestException($"GitHub couldn't send the download right now ({firstError?.Message}, then {code}). Try again in a few minutes.");
     }
 
     /// <summary>"hash  filename" lines (sha256sum format) -> filename: lowercase hash.</summary>
