@@ -8,8 +8,8 @@
         <LangVersion>latest</LangVersion>
         <ApplicationId>com.tmk.coctimemanager</ApplicationId>
         <ApplicationTitle>CoC Upgrade Timer</ApplicationTitle>
-        <ApplicationVersion>10401</ApplicationVersion>
-        <ApplicationDisplayVersion>1.4.1</ApplicationDisplayVersion>
+        <ApplicationVersion>10402</ApplicationVersion>
+        <ApplicationDisplayVersion>1.4.2</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <AndroidSdkDirectory Condition="'$(AndroidSdkDirectory)' == ''">$(HOME)/Android/Sdk</AndroidSdkDirectory>
         <JavaSdkDirectory Condition="'$(JavaSdkDirectory)' == ''">$(HOME)/.local/share/jdk-21</JavaSdkDirectory>

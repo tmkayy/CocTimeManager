@@ -119,36 +119,23 @@ public partial class MainView : UserControl
         if (narrow == _narrow) return;
         _narrow = narrow;
 
-        ManualExpander.IsVisible = narrow;
         if (narrow)
         {
-            // Phones: the tracked upgrades first, with everything for adding one by hand folded away below them.
+            // Phones: Sync and Settings, then the tracked upgrades, then adding one by hand.
             RootGrid.ColumnDefinitions = new ColumnDefinitions("*");
             RootGrid.RowDefinitions = new RowDefinitions("Auto,Auto");
             Grid.SetColumn(ResultsPanel, 0);
-            Grid.SetRow(ResultsPanel, 0);
-            Grid.SetRow(InputsPanel, 1);
-
-            MoveTo(UpdateBanner, ResultsPanel, 0);
-            MoveTo(ManualPanel, ManualHost, 0);
-            MoveTo(ResultPanel, ManualHost, 1);
-            MoveTo(TrackButton, ManualHost, 2);
-            TrackButton.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
-            TrackButton.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            Grid.SetRow(ResultsPanel, 1);
+            MoveTo(ManualExpander, ResultsPanel, ResultsPanel.Children.Count);
         }
         else
         {
+            // Desktop: Sync, Settings and adding by hand on the left, the tracked upgrades on the right.
             RootGrid.ColumnDefinitions = new ColumnDefinitions("360,*");
             RootGrid.RowDefinitions = new RowDefinitions("Auto");
             Grid.SetColumn(ResultsPanel, 1);
             Grid.SetRow(ResultsPanel, 0);
-            Grid.SetRow(InputsPanel, 0);
-
-            MoveTo(UpdateBanner, InputsPanel, 0);
-            MoveTo(ManualPanel, InputsPanel, InputsPanel.Children.IndexOf(ManualExpander) + 1);
-            MoveTo(ResultPanel, ResultsPanel, 0);
-            MoveTo(TrackButton, TrackerHeader, TrackerHeader.Children.Count);
-            TrackButton.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+            MoveTo(ManualExpander, InputsPanel, InputsPanel.Children.Count);
         }
     }
 
@@ -262,7 +249,7 @@ public partial class MainView : UserControl
         UpgradeStore.Save(_tracked);
         Notifications.Current.Schedule(upgrade);
         NameBox.Text = "";
-        ManualExpander.IsExpanded = false; // phones: back to the list, where the new upgrade now is
+        ManualExpander.IsExpanded = false; // back to the list, where the new upgrade now is
     }
 
     private async void ImportButton_Click(object? sender, RoutedEventArgs e)

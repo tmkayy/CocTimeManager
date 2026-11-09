@@ -3,11 +3,11 @@
 #   CocUpgradeTimer-<ver>-windows-x64.exe      single-file, no .NET install needed
 #   CocUpgradeTimer-<ver>-linux-x64.tar.gz     binary + .desktop launcher + install.sh
 #   CocUpgradeTimer-<ver>-android.apk
-# Usage: scripts/build-release.sh [version]     (default: 1.4.1)
+# Usage: scripts/build-release.sh [version]     (default: 1.4.2)
 # Android needs a dotnet with the android workload; set ANDROID_DOTNET (default ~/.dotnet/dotnet).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-ver="${1:-1.4.1}"
+ver="${1:-1.4.2}"
 dotnet="${DOTNET:-dotnet}"
 android_dotnet="${ANDROID_DOTNET:-$HOME/.dotnet/dotnet}"
 out="release"

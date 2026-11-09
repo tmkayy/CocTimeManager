@@ -25,14 +25,80 @@
                     </Grid>
                 </Border>
 
-                <!-- Phones only: holds ManualPanel, ResultPanel and TrackButton, moved here from code -->
-                <Expander x:Name="ManualExpander" Classes="section" IsVisible="False">
+                <!-- Collapsed by default to save space -->
+                <Expander x:Name="SyncExpander" Classes="section">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Classes="label" Text="Sync with another device" />
+                            <Border Classes="info"
+                                    ToolTip.Tip="Both devices on the same Wi-Fi: press Show code on one and type that code on the other with Enter code. Both lists are merged both ways: nothing is lost, deleted upgrades stay deleted, and the newest village import wins. If it can't find the other device, swap which one shows the code (a firewall may be blocking). Not on the same Wi-Fi? Use Copy code / Paste code and send the code yourself.">
+                                <TextBlock Text="i" />
+                            </Border>
+                        </StackPanel>
+                    </Expander.Header>
+                    <StackPanel Spacing="8">
+                        <!-- Idle -->
+                        <Grid x:Name="SyncIdlePanel" ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" x:Name="ShowSyncCodeButton" Content="Show code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="1" x:Name="EnterSyncCodeButton" Content="Enter code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </Grid>
+
+                        <!-- Hosting: big code + countdown -->
+                        <StackPanel x:Name="SyncHostPanel" Spacing="4" IsVisible="False">
+                            <TextBlock x:Name="SyncCodeText" FontSize="44" FontWeight="Bold" LetterSpacing="12"
+                                       HorizontalAlignment="Center" Classes="accent" />
+                            <TextBlock x:Name="SyncHostHint" Classes="hint" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                            <Button x:Name="CancelSyncButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <!-- Joining: type the code -->
+                        <Grid x:Name="SyncJoinPanel" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" IsVisible="False">
+                            <TextBox Grid.Column="0" x:Name="SyncCodeInput" PlaceholderText="4-digit code" MaxLength="4"
+                                     FontSize="20" HorizontalContentAlignment="Center" TextInputOptions.ContentType="Digits" />
+                            <Button Grid.Column="1" x:Name="JoinSyncButton" Classes="primary" Content="Sync" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                            <Button Grid.Column="2" x:Name="CancelJoinButton" Content="✕" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                        </Grid>
+
+                        <!-- Fallback: send the long code yourself -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" x:Name="CopySyncButton" Content="Copy code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="1" x:Name="PasteSyncButton" Content="Paste code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+                <Expander x:Name="SettingsExpander" Classes="section">
+                    <Expander.Header>
+                        <TextBlock Classes="label" Text="Settings" />
+                    </Expander.Header>
+                    <StackPanel Spacing="10">
+                    <CheckBox x:Name="LightModeCheck" Content="Light mode" />
+
+                    <!-- Desktop only (shown from code when autostart is supported) -->
+                    <StackPanel x:Name="AutostartRow" Orientation="Horizontal" Spacing="6" IsVisible="False">
+                        <CheckBox x:Name="AutostartCheck" Content="Start at login" />
+                        <Border Classes="info"
+                                ToolTip.Tip="Starts hidden in the system tray when you log in, so you get notified when upgrades finish without opening the app. Closing the window keeps it running in the tray; use Quit in the tray menu to exit.">
+                            <TextBlock Text="i" />
+                        </Border>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock x:Name="VersionText" Classes="label" />
+                            <TextBlock x:Name="UpdateCheckStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="CheckUpdatesButton" Content="Check for updates" VerticalAlignment="Center" />
+                    </Grid>
+                    </StackPanel>
+                </Expander>
+
+                <!-- Entering an upgrade by hand: folded away by default. Phones move this below the tracked list. -->
+                <Expander x:Name="ManualExpander" Classes="section">
                     <Expander.Header>
                         <TextBlock Classes="label" Text="Add upgrade manually" />
                     </Expander.Header>
-                    <StackPanel x:Name="ManualHost" Spacing="12" />
-                </Expander>
-
+                    <StackPanel x:Name="ManualHost" Spacing="12">
                 <StackPanel x:Name="ManualPanel" Spacing="12">
                 <TextBlock Classes="h1" Text="New upgrade" />
 
@@ -126,30 +192,33 @@
                         </StackPanel>
                         <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
                             <CheckBox Grid.Row="0" Grid.Column="0" x:Name="GoldPassCheck">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Image Source="avares://CocTimeManager/icons/gold_pass.png" Classes="icon" />
-                                    <TextBlock Text="Gold Pass" VerticalAlignment="Center" />
-                                </StackPanel>
+                                <!-- Grid rather than a horizontal StackPanel so a long name wraps instead of being cut off -->
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Image Grid.Column="0" Source="avares://CocTimeManager/icons/gold_pass.png" Classes="icon" />
+                                    <TextBlock Grid.Column="1" Text="Gold Pass" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </Grid>
                             </CheckBox>
                             <NumericUpDown Grid.Row="0" Grid.Column="1" x:Name="GoldPassPct" VerticalAlignment="Center"
                                            Minimum="0" Maximum="100" Value="20" Increment="5" FormatString="0'%'"
                                            IsEnabled="{Binding #GoldPassCheck.IsChecked}" />
 
                             <CheckBox Grid.Row="1" Grid.Column="0" x:Name="JamCheck">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Image Source="avares://CocTimeManager/icons/hammer.png" Classes="icon" />
-                                    <TextBlock Text="Hammer / Summer Jam" VerticalAlignment="Center" />
-                                </StackPanel>
+                                <!-- Grid rather than a horizontal StackPanel so a long name wraps instead of being cut off -->
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Image Grid.Column="0" Source="avares://CocTimeManager/icons/hammer.png" Classes="icon" />
+                                    <TextBlock Grid.Column="1" Text="Hammer / Summer Jam" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </Grid>
                             </CheckBox>
                             <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="JamPct" VerticalAlignment="Center"
                                            Minimum="0" Maximum="100" Value="50" Increment="5" FormatString="0'%'"
                                            IsEnabled="{Binding #JamCheck.IsChecked}" />
 
                             <CheckBox Grid.Row="2" Grid.Column="0" x:Name="InactivityCheck">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Image Source="avares://CocTimeManager/icons/villager.webp" Classes="icon" />
-                                    <TextBlock Text="Inactivity Boost" VerticalAlignment="Center" />
-                                </StackPanel>
+                                <!-- Grid rather than a horizontal StackPanel so a long name wraps instead of being cut off -->
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Image Grid.Column="0" Source="avares://CocTimeManager/icons/villager.webp" Classes="icon" />
+                                    <TextBlock Grid.Column="1" Text="Inactivity Boost" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </Grid>
                             </CheckBox>
                             <NumericUpDown Grid.Row="2" Grid.Column="1" x:Name="InactivityPct" VerticalAlignment="Center"
                                            Minimum="0" Maximum="100" Value="50" Increment="5" FormatString="0'%'"
@@ -160,77 +229,6 @@
 
                 </StackPanel>
 
-                <!-- Collapsed by default to save space -->
-                <Expander x:Name="SyncExpander" Classes="section">
-                    <Expander.Header>
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Classes="label" Text="Sync with another device" />
-                            <Border Classes="info"
-                                    ToolTip.Tip="Both devices on the same Wi-Fi: press Show code on one and type that code on the other with Enter code. Both lists are merged both ways: nothing is lost, deleted upgrades stay deleted, and the newest village import wins. If it can't find the other device, swap which one shows the code (a firewall may be blocking). Not on the same Wi-Fi? Use Copy code / Paste code and send the code yourself.">
-                                <TextBlock Text="i" />
-                            </Border>
-                        </StackPanel>
-                    </Expander.Header>
-                    <StackPanel Spacing="8">
-                        <!-- Idle -->
-                        <Grid x:Name="SyncIdlePanel" ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Button Grid.Column="0" x:Name="ShowSyncCodeButton" Content="Show code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                            <Button Grid.Column="1" x:Name="EnterSyncCodeButton" Content="Enter code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                        </Grid>
-
-                        <!-- Hosting: big code + countdown -->
-                        <StackPanel x:Name="SyncHostPanel" Spacing="4" IsVisible="False">
-                            <TextBlock x:Name="SyncCodeText" FontSize="44" FontWeight="Bold" LetterSpacing="12"
-                                       HorizontalAlignment="Center" Classes="accent" />
-                            <TextBlock x:Name="SyncHostHint" Classes="hint" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-                            <Button x:Name="CancelSyncButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                        </StackPanel>
-
-                        <!-- Joining: type the code -->
-                        <Grid x:Name="SyncJoinPanel" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" IsVisible="False">
-                            <TextBox Grid.Column="0" x:Name="SyncCodeInput" PlaceholderText="4-digit code" MaxLength="4"
-                                     FontSize="20" HorizontalContentAlignment="Center" TextInputOptions.ContentType="Digits" />
-                            <Button Grid.Column="1" x:Name="JoinSyncButton" Classes="primary" Content="Sync" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
-                            <Button Grid.Column="2" x:Name="CancelJoinButton" Content="✕" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
-                        </Grid>
-
-                        <!-- Fallback: send the long code yourself -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Button Grid.Column="0" x:Name="CopySyncButton" Content="Copy code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                            <Button Grid.Column="1" x:Name="PasteSyncButton" Content="Paste code" FontSize="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                        </Grid>
-                    </StackPanel>
-                </Expander>
-
-                <Expander x:Name="SettingsExpander" Classes="section">
-                    <Expander.Header>
-                        <TextBlock Classes="label" Text="Settings" />
-                    </Expander.Header>
-                    <StackPanel Spacing="10">
-                    <CheckBox x:Name="LightModeCheck" Content="Light mode" />
-
-                    <!-- Desktop only (shown from code when autostart is supported) -->
-                    <StackPanel x:Name="AutostartRow" Orientation="Horizontal" Spacing="6" IsVisible="False">
-                        <CheckBox x:Name="AutostartCheck" Content="Start at login" />
-                        <Border Classes="info"
-                                ToolTip.Tip="Starts hidden in the system tray when you log in, so you get notified when upgrades finish without opening the app. Closing the window keeps it running in the tray; use Quit in the tray menu to exit.">
-                            <TextBlock Text="i" />
-                        </Border>
-                    </StackPanel>
-
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock x:Name="VersionText" Classes="label" />
-                            <TextBlock x:Name="UpdateCheckStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
-                        </StackPanel>
-                        <Button Grid.Column="1" x:Name="CheckUpdatesButton" Content="Check for updates" VerticalAlignment="Center" />
-                    </Grid>
-                    </StackPanel>
-                </Expander>
-        </StackPanel>
-
-        <!-- ============ Results + tracker ============ -->
-        <StackPanel x:Name="ResultsPanel" Grid.Column="1" Spacing="12">
             <StackPanel x:Name="ResultPanel" Spacing="12">
             <TextBlock Classes="h1" Text="Result" />
 
@@ -256,13 +254,19 @@
             </Border>
 
             </StackPanel>
+                    <Button x:Name="TrackButton" Classes="primary" Content="Start &amp; track"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    </StackPanel>
+                </Expander>
+        </StackPanel>
 
+        <!-- ============ Results + tracker ============ -->
+        <StackPanel x:Name="ResultsPanel" Grid.Column="1" Spacing="12">
             <StackPanel x:Name="TrackerPanel" Spacing="12">
-            <Grid x:Name="TrackerHeader" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <Grid x:Name="TrackerHeader" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <TextBlock Grid.Column="0" Classes="h1" Text="Tracked upgrades" VerticalAlignment="Center" />
                 <Button Grid.Column="1" x:Name="ImportButton" Content="Import village"
                         ToolTip.Tip="In the game: Settings → More Settings → Export village data (copies it to the clipboard). Then press this to add every running upgrade, lab research and pet upgrade. Importing again updates them; ones that are no longer running are removed." />
-                <Button Grid.Column="2" x:Name="TrackButton" Classes="primary" Content="Start &amp; track" />
             </Grid>
 
             <StackPanel Orientation="Horizontal" Spacing="6">

@@ -14,10 +14,13 @@ public sealed record ImportedTimer(string Key, string Name, DateTime FinishAt);
 /// <param name="BoostedCount">How many timers the active Builder Potion was applied to.</param>
 /// <param name="LabBoostLeft">Research Potion time left at export (zero if none was active).</param>
 /// <param name="LabBoostedCount">How many timers the active Research Potion was applied to.</param>
+/// <param name="PetBoostLeft">Pet Potion time left at export (zero if none was active).</param>
+/// <param name="PetBoostedCount">How many timers the active Pet Potion was applied to.</param>
 /// <param name="HelperCount">How many timers finish sooner thanks to a helper session, now or repeating later.</param>
 public sealed record VillageExport(string Tag, DateTime ExportedAt, List<ImportedTimer> Timers,
                                    TimeSpan BuilderBoostLeft, int BoostedCount,
-                                   TimeSpan LabBoostLeft, int LabBoostedCount, int HelperCount);
+                                   TimeSpan LabBoostLeft, int LabBoostedCount,
+                                   TimeSpan PetBoostLeft, int PetBoostedCount, int HelperCount);
 
 /// <summary>What an import changes: <see cref="Removed"/> are all previously imported entries,
 /// <see cref="Added"/> their replacements; <see cref="Kept"/> of them continue an earlier entry.</summary>
@@ -29,7 +32,7 @@ public sealed record ImportMerge(List<TrackedUpgrade> Removed, List<TrackedUpgra
 /// Sections ending in "2" (buildings2, units2, ...) are the Builder Base.
 /// <para>
 /// <c>timer</c> is work left at normal speed: active boosts are NOT taken into account. Time left on potions
-/// is in <c>boosts.builder_boost</c> and <c>boosts.lab_boost</c> (seconds); an item a helper is working on has
+/// is in <c>boosts.builder_boost</c>, <c>boosts.lab_boost</c> and <c>boosts.pet_boost</c> (seconds); an item a helper is working on has
 /// <c>helper_timer</c> (seconds), and the helper's level is in the <c>helpers</c> section.
 /// </para>
 /// <para>
@@ -57,6 +60,9 @@ public static class VillageImport
 
     /// <summary>Home-village lab sections, so sped up by a Research Potion and the Lab Assistant.</summary>
     private static readonly HashSet<string> LabSections = ["units", "spells", "siege_machines"];
+
+    /// <summary>The Pet House, sped up by a Pet Potion only.</summary>
+    private const string PetSection = "pets";
 
     private const long BuilderApprenticeId = 93000000, LabAssistantId = 93000001;
 
@@ -106,9 +112,10 @@ public static class VillageImport
 
             var builderBoost = BoostLeft(root, "builder_boost");
             var labBoost = BoostLeft(root, "lab_boost");
+            var petBoost = BoostLeft(root, "pet_boost");
             var apprentice = FindHelper(root, BuilderApprenticeId);
             var assistant = FindHelper(root, LabAssistantId);
-            int boosted = 0, labBoosted = 0, helped = 0;
+            int boosted = 0, labBoosted = 0, petBoosted = 0, helped = 0;
 
             var timers = new List<ImportedTimer>();
             foreach (var section in root.EnumerateObject().Where(p => p.Value.ValueKind == JsonValueKind.Array))
@@ -131,9 +138,11 @@ public static class VillageImport
 
                     var isBuilder = BuilderSections.Contains(section.Name);
                     var isLab = LabSections.Contains(section.Name);
+                    var isPet = section.Name == PetSection;
                     var work = TimeSpan.FromSeconds(secondsLeft);
                     var (potionLeft, potionExtra) = isBuilder ? (builderBoost, UpgradeCalculator.PotionSpeedMultiplier - 1)
                         : isLab ? (labBoost, UpgradeCalculator.ResearchPotionSpeedMultiplier - 1)
+                        : isPet ? (petBoost, UpgradeCalculator.PetPotionSpeedMultiplier - 1)
                         : (TimeSpan.Zero, 0);
                     List<(TimeSpan, TimeSpan, int)> potion = [(TimeSpan.Zero, potionLeft, potionExtra)];
                     var boosts = potion.Concat(HelperSessions(item, work, isBuilder ? apprentice : isLab ? assistant : default)).ToList();
@@ -141,7 +150,8 @@ public static class VillageImport
                     if (potionLeft > TimeSpan.Zero)
                     {
                         if (isBuilder) boosted++;
-                        else labBoosted++;
+                        else if (isLab) labBoosted++;
+                        else petBoosted++;
                     }
 
                     var timeLeft = UpgradeCalculator.TimeToFinish(work, boosts);
@@ -153,7 +163,7 @@ public static class VillageImport
             }
 
             return new VillageExport(tag, exportedAt, timers.OrderBy(t => t.FinishAt).ToList(),
-                                     builderBoost, boosted, labBoost, labBoosted, helped);
+                                     builderBoost, boosted, labBoost, labBoosted, petBoost, petBoosted, helped);
         }
     }
 
@@ -237,6 +247,9 @@ public static class VillageImport
                    : "") +
                (export.LabBoostedCount > 0
                    ? $" Research Potion active ({UpgradeCalculator.Format(export.LabBoostLeft)} left at export): applied to {export.LabBoostedCount} lab upgrade{(export.LabBoostedCount == 1 ? "" : "s")}."
+                   : "") +
+               (export.PetBoostedCount > 0
+                   ? $" Pet Potion active ({UpgradeCalculator.Format(export.PetBoostLeft)} left at export): applied to {export.PetBoostedCount} pet upgrade{(export.PetBoostedCount == 1 ? "" : "s")}."
                    : "") +
                (export.HelperCount > 0
                    ? $" Helpers applied to {export.HelperCount} upgrade{(export.HelperCount == 1 ? "" : "s")}."

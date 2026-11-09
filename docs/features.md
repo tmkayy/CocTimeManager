@@ -14,8 +14,8 @@ See [How the maths works](calculations.md) for how these combine.
 
 ## Tracked upgrades
 
-A list of your upgrades with a green progress bar and countdown, saved between sessions. Add them by hand with
-**Start & track**, or all at once by [importing from the game](importing.md).
+A list of your upgrades with a green progress bar and countdown, saved between sessions. Add them by hand under
+**Add upgrade manually**, or all at once by [importing from the game](importing.md).
 
 Untick **Builder Base upgrades** above the list to hide those timers and silence their notifications. They're still
 imported and synced, so ticking it shows them again.
@@ -40,10 +40,11 @@ phones don't.
 To update it without opening the app, copy your village data in the game and tap **Import** on the widget. See
 [Importing from the game](importing.md).
 
-## Phone layout
+## Layout
 
-On a phone the tracked upgrades come first. The entry form, boosts, time reductions and result are folded into
-**Add upgrade manually** below them.
+The entry form, boosts, time reductions, result and **Start & track** are folded into **Add upgrade manually**, which
+starts collapsed. On a computer it sits under *Sync* and *Settings* on the left, with your tracked upgrades on the
+right. On a phone, *Sync* and *Settings* come first, then your tracked upgrades, then **Add upgrade manually**.
 
 ## In-app updates
 

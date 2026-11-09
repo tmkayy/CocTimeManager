@@ -16,7 +16,8 @@ Boosts active when you export are taken into account, using the time left listed
 
 - A **Builder Potion** gives home-village builder upgrades 10× speed.
 - A **Research Potion** gives lab research 24× speed.
-- Pets and the Builder Base aren't affected by either.
+- A **Pet Potion** gives Pet House upgrades 24× speed.
+- The Builder Base isn't affected by any of them.
 - A **Builder's Apprentice** or **Lab Assistant** adds its level on top for the rest of its session, e.g. a level 8
   Apprentice during a Builder Potion is 18×.
 - If you've set a helper to reapply itself, its future sessions (every 23 hours) are counted too.

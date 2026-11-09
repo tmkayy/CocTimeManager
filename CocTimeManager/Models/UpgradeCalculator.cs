@@ -26,6 +26,9 @@ public static class UpgradeCalculator
     /// <summary>A Research Potion makes the lab work this many times faster while it is active.</summary>
     public const int ResearchPotionSpeedMultiplier = 24;
 
+    /// <summary>A Pet Potion makes the Pet House work this many times faster while it is active.</summary>
+    public const int PetPotionSpeedMultiplier = 24;
+
     /// <summary>
     /// Real time to get through <paramref name="work"/> (time left at normal speed) when boosts, timed from now,
     /// add to the normal 1x speed between Start and End. Rates add up: a 10x potion (+9) and a helper adding 8 give 18x.
