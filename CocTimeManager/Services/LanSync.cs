@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CocTimeManager.Models;
 
 namespace CocTimeManager.Services;
 
@@ -26,7 +27,7 @@ namespace CocTimeManager.Services;
 /// </list>
 /// The code acts as a password: the host gives up after <see cref="MaxWrongCodes"/> wrong attempts.
 /// </summary>
-public static class LanSync
+public static partial class LanSync
 {
     public const int Port = 45871;
     public const int MaxWrongCodes = 5;
@@ -47,7 +48,9 @@ public static class LanSync
     /// Waits for one joiner with <paramref name="code"/>. <paramref name="exchange"/> gets the joiner's sync
     /// code and returns ours (after merging) to send back. Throws <see cref="LanSyncException"/> on failure.
     /// </summary>
-    public static async Task HostAsync(string code, Func<string, Task<string>> exchange, CancellationToken ct)
+    /// <param name="pairing">Our side of a pairing (null: don't pair); <paramref name="paired"/> gets the result.</param>
+    public static async Task HostAsync(string code, Func<string, Task<string>> exchange, CancellationToken ct,
+                                       PairingSide? pairing = null, Action<PairInfo>? paired = null)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(HostTimeout);
@@ -82,7 +85,7 @@ public static class LanSync
                     using var client = await listener.AcceptTcpClientAsync(timeout.Token);
                     try
                     {
-                        if (await ServeAsync(client, code, exchange, timeout.Token)) return;
+                        if (await ServeAsync(client, code, exchange, pairing, paired, timeout.Token)) return;
                         // Wrong code. (A plain connect-and-close from a scan isn't counted.)
                         if (++wrong >= MaxWrongCodes)
                             throw new LanSyncException("Too many wrong codes, stopped waiting. Show a new code to try again.");
@@ -109,7 +112,8 @@ public static class LanSync
     }
 
     /// <summary>True after a full exchange, false for a wrong code; throws <see cref="ScanProbe"/> for an empty connection.</summary>
-    private static async Task<bool> ServeAsync(TcpClient client, string code, Func<string, Task<string>> exchange, CancellationToken ct)
+    private static async Task<bool> ServeAsync(TcpClient client, string code, Func<string, Task<string>> exchange,
+                                               PairingSide? pairing, Action<PairInfo>? paired, CancellationToken ct)
     {
         using var io = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         using var both = CancellationTokenSource.CreateLinkedTokenSource(ct, io.Token);
@@ -136,6 +140,7 @@ public static class LanSync
         var ours = await exchange(theirs);
         await writer.WriteLineAsync(ours);
         await writer.FlushAsync(both.Token);
+        if (pairing is not null && await AnswerPairingAsync(reader, writer, pairing, ct) is { } pair) paired?.Invoke(pair);
         return true;
     }
 
@@ -166,10 +171,11 @@ public static class LanSync
     /// Finds the device showing <paramref name="code"/>, sends <paramref name="ourCode"/> and returns its
     /// (merged) sync code. Throws <see cref="LanSyncException"/> on failure.
     /// </summary>
-    public static async Task<string> JoinAsync(string code, string ourCode, CancellationToken ct)
+    public static async Task<string> JoinAsync(string code, string ourCode, CancellationToken ct,
+                                               PairingSide? pairing = null, Action<PairInfo>? paired = null)
     {
         using var finding = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var udpTask = DiscoverAsync(code, TimeSpan.FromSeconds(3), finding.Token);
+        var udpTask = DiscoverAsync("CTMSYNC?" + code, $"CTMSYNC!{code}:", TimeSpan.FromSeconds(3), finding.Token);
         var scanTask = ScanAsync(finding.Token);
 
         // Try whichever finds something first (UDP answers within ms on open networks; the scan takes up to
@@ -205,8 +211,11 @@ public static class LanSync
                         io.CancelAfter(TimeSpan.FromSeconds(20));
                         await session.Writer.WriteLineAsync(ourCode);
                         await session.Writer.FlushAsync(io.Token);
-                        return await ReadLineAsync(session.Reader, io.Token)
-                               ?? throw new LanSyncException("The other device closed the connection.");
+                        var theirs = await ReadLineAsync(session.Reader, io.Token)
+                                     ?? throw new LanSyncException("The other device closed the connection.");
+                        if (pairing is not null && await OfferPairingAsync(session.Reader, session.Writer, pairing, ct) is { } pair)
+                            paired?.Invoke(pair);
+                        return theirs;
                     }
                     catch (Exception ex) when (ex is IOException or SocketException or OperationCanceledException && !ct.IsCancellationRequested)
                     {
@@ -265,15 +274,16 @@ public static class LanSync
         return null;
     }
 
-    /// <summary>UDP broadcast discovery; null if nobody answered within <paramref name="wait"/>.</summary>
-    private static async Task<IPEndPoint?> DiscoverAsync(string code, TimeSpan wait, CancellationToken ct)
+    /// <summary>UDP broadcast discovery: sends <paramref name="question"/> and waits for a reply starting with
+    /// <paramref name="answerPrefix"/> followed by the port. Null if nobody answered within <paramref name="wait"/>.</summary>
+    private static async Task<IPEndPoint?> DiscoverAsync(string question, string answerPrefix, TimeSpan wait, CancellationToken ct)
     {
         try
         {
             // Bound to a random port up front: we start listening for the reply before sending anything.
             using var udp = new UdpClient(new IPEndPoint(IPAddress.Any, 0)) { EnableBroadcast = true };
-            var ask = Encoding.ASCII.GetBytes("CTMSYNC?" + code);
-            var expect = $"CTMSYNC!{code}:";
+            var ask = Encoding.ASCII.GetBytes(question);
+            var expect = answerPrefix;
             var targets = BroadcastAddresses().Select(a => new IPEndPoint(a, Port)).ToList();
 
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);

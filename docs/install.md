@@ -12,8 +12,8 @@ Ready-made builds are on the [Releases page](https://github.com/tmkayy/CocTimeMa
 
 ```bash
 # Linux example
-tar -xzf CocUpgradeTimer-1.4.2-linux-x64.tar.gz
-cd CocUpgradeTimer-1.4.2-linux-x64
+tar -xzf CocUpgradeTimer-1.5.0-linux-x64.tar.gz
+cd CocUpgradeTimer-1.5.0-linux-x64
 ./install.sh
 ```
 

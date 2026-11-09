@@ -92,6 +92,28 @@ public sealed class AppSettings
     public bool ShowBuilderBase { get; set; } = true;
 
     public bool LightMode { get; set; }
+
+    /// <summary>Identifies this device to a paired one; created on first use.</summary>
+    public string DeviceId { get; set; } = "";
+
+    /// <summary>The device this one syncs with by itself on the same Wi-Fi (null: not paired).</summary>
+    public PairInfo? Pair { get; set; }
+}
+
+/// <summary>A device paired during a code sync. See <see cref="Services.PairedSync"/>.</summary>
+public sealed class PairInfo
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+
+    /// <summary>Base64 key both devices derived during pairing; requests and replies are signed with it.</summary>
+    public string Secret { get; set; } = "";
+
+    /// <summary>True if that device listens for syncs (desktop). Phones can't listen in the background.</summary>
+    public bool Listens { get; set; }
+
+    /// <summary>Where it was last reached, tried first next time.</summary>
+    public string? LastAddress { get; set; }
 }
 
 public static class UpgradeStore
@@ -116,6 +138,9 @@ public static class UpgradeStore
 
     /// <summary>Raised after the upgrades or settings are saved.</summary>
     public static event Action? Changed;
+
+    /// <summary>Raised after the upgrade list (not the settings) is saved.</summary>
+    public static event Action? UpgradesSaved;
 
     public static AppSettings LoadSettings()
     {
@@ -218,5 +243,6 @@ public static class UpgradeStore
             // Saving is best effort.
         }
         Changed?.Invoke();
+        UpgradesSaved?.Invoke();
     }
 }

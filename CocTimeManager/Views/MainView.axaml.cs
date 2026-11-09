@@ -83,6 +83,7 @@ public partial class MainView : UserControl
         CancelSyncButton.Click += (_, _) => CancelSync();
         CancelJoinButton.Click += (_, _) => CancelSync();
         SyncCodeInput.KeyDown += (_, e) => { if (e.Key == Key.Enter) JoinSync_Click(null, e); };
+        SetupPairedSync();
 
         if (Autostart.Current is { } autostart)
         {
@@ -363,6 +364,47 @@ public partial class MainView : UserControl
               (r.ImportsReplaced ? " Used the other device's newer village import." : "");
     }
 
+    // ---------- paired device: syncs by itself on the same Wi-Fi ----------
+
+    private void SetupPairedSync()
+    {
+        // Merges from the paired device go into the list on screen; no status line, the Sync section shows it.
+        PairedSync.MergeIntoApp = incoming => Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            ApplySync(incoming);
+            return SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
+        }).GetTask();
+        PairedSync.StatusChanged += _ => Dispatcher.UIThread.Post(UpdatePairUi);
+        PairedSync.PairChanged += () => Dispatcher.UIThread.Post(UpdatePairUi);
+        SyncNowButton.Click += async (_, _) =>
+        {
+            SyncNowButton.IsEnabled = false;
+            PairStatus.Text = "Syncing…";
+            PairStatus.IsVisible = true;
+            try { await Task.Run(() => PairedSync.SyncNowAsync()); }
+            finally { SyncNowButton.IsEnabled = true; UpdatePairUi(); }
+        };
+        ForgetPairButton.Click += async (_, _) => await PairedSync.ForgetAsync();
+        UpdatePairUi();
+        PairedSync.Start();
+    }
+
+    private void UpdatePairUi()
+    {
+        var pair = PairedSync.Pair;
+        PairButtons.IsVisible = pair is not null;
+        SyncNowButton.IsVisible = pair?.Listens == true;
+        PairText.Text = pair is null
+            ? "Sync with a code once and the two devices stay paired: they sync by themselves on the same Wi-Fi."
+            : pair.Listens
+                ? $"Paired with {pair.Name}. Changes here are sent to it automatically on the same Wi-Fi, and opening the app fetches its changes."
+                : $"Paired with {pair.Name}. It sends its changes here automatically while this app is running, and fetches this device's changes when it opens.";
+        PairText.Classes.Set("hint", pair is null);
+        var status = PairedSync.LastStatus;
+        PairStatus.Text = status;
+        PairStatus.IsVisible = pair is not null && !string.IsNullOrEmpty(status);
+    }
+
     // ---------- Wi-Fi sync with a 4-digit code ----------
 
     private CancellationTokenSource? _syncCts;
@@ -403,6 +445,7 @@ public partial class MainView : UserControl
         Tick();
         countdown.Start();
 
+        await PairedSync.StopServerAsync(); // the code sync needs the same port
         try
         {
             await LanSync.HostAsync(code, theirCode =>
@@ -413,7 +456,7 @@ public partial class MainView : UserControl
                     ShowImportStatus(ApplySync(SyncCode.Parse(theirCode)));
                     return SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
                 }).GetTask();
-            }, cts.Token);
+            }, cts.Token, PairedSync.Side, PairedSync.SavePair);
         }
         catch (OperationCanceledException)
         {
@@ -431,6 +474,7 @@ public partial class MainView : UserControl
         {
             countdown.Stop();
             if (_syncCts == cts) CancelSync();
+            PairedSync.StartServer();
         }
     }
 
@@ -458,7 +502,7 @@ public partial class MainView : UserControl
         try
         {
             var ours = SyncCode.Create(_tracked, UpgradeStore.LoadDeleted());
-            var theirs = await Task.Run(() => LanSync.JoinAsync(code, ours, cts.Token));
+            var theirs = await Task.Run(() => LanSync.JoinAsync(code, ours, cts.Token, PairedSync.Side, PairedSync.SavePair));
             ShowImportStatus(ApplySync(SyncCode.Parse(theirs)));
             if (_syncCts == cts) CancelSync();
         }

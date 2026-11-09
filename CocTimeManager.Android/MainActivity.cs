@@ -27,4 +27,11 @@ public class MainActivity : AvaloniaMainActivity
             RequestPermissions([Manifest.Permission.PostNotifications], 1);
         }
     }
+
+    /// <summary>Back in front: fetch the paired PC's changes (a phone can't receive them in the background).</summary>
+    protected override void OnResume()
+    {
+        base.OnResume();
+        CocTimeManager.Services.PairedSync.SyncSoon(TimeSpan.Zero);
+    }
 }

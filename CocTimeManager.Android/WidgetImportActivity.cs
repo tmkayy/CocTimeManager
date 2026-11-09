@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.Widget;
 using CocTimeManager.Models;
+using CocTimeManager.Services;
 
 namespace CocTimeManager.Android;
 
@@ -17,13 +18,28 @@ public class WidgetImportActivity : Activity
 {
     private bool _imported;
 
-    public override void OnWindowFocusChanged(bool hasFocus)
+    public override async void OnWindowFocusChanged(bool hasFocus)
     {
         base.OnWindowFocusChanged(hasFocus);
         if (!hasFocus || _imported) return;
         _imported = true;
 
-        Toast.MakeText(ApplicationContext, Import(), ToastLength.Long)?.Show();
+        var message = Import();
+        // Send it to the paired PC now: this screen closes right after, and the app may not be running.
+        if (PairedSync.Pair is { Listens: true } pair)
+        {
+            using var timeout = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(8));
+            try
+            {
+                if (await System.Threading.Tasks.Task.Run(() => PairedSync.SyncNowAsync(timeout.Token)))
+                    message += $" Sent to {pair.Name}.";
+            }
+            catch (OperationCanceledException)
+            {
+                // Not reachable in time: the app sends it next time it opens.
+            }
+        }
+        Toast.MakeText(ApplicationContext, message, ToastLength.Long)?.Show();
         Finish();
     }
 

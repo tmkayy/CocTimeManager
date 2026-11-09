@@ -1,5 +1,6 @@
 using System;
 using Android.App;
+using Android.OS;
 using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
@@ -17,6 +18,7 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
     public override void OnCreate()
     {
         Notifications.Current = new AndroidNotificationService(this);
+        PairedSync.DeviceName = $"{Build.Manufacturer} {Build.Model}".Trim();
         Updater.Installer = new AndroidUpdateInstaller(this);
 
         // This also runs when the boot receiver starts the process, which resets the widget's countdowns after a reboot.

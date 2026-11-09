@@ -31,12 +31,22 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Classes="label" Text="Sync with another device" />
                             <Border Classes="info"
-                                    ToolTip.Tip="Both devices on the same Wi-Fi: press Show code on one and type that code on the other with Enter code. Both lists are merged both ways: nothing is lost, deleted upgrades stay deleted, and the newest village import wins. If it can't find the other device, swap which one shows the code (a firewall may be blocking). Not on the same Wi-Fi? Use Copy code / Paste code and send the code yourself.">
+                                    ToolTip.Tip="Both devices on the same Wi-Fi: press Show code on one and type that code on the other with Enter code. Both lists are merged both ways: nothing is lost, deleted upgrades stay deleted, and the newest village import wins. The two devices also stay paired and keep syncing by themselves on the same Wi-Fi. If it can't find the other device, swap which one shows the code (a firewall may be blocking). Not on the same Wi-Fi? Use Copy code / Paste code and send the code yourself.">
                                 <TextBlock Text="i" />
                             </Border>
                         </StackPanel>
                     </Expander.Header>
                     <StackPanel Spacing="8">
+                        <!-- Paired device: syncs by itself on the same Wi-Fi -->
+                        <StackPanel x:Name="PairPanel" Spacing="6">
+                            <TextBlock x:Name="PairText" TextWrapping="Wrap" />
+                            <TextBlock x:Name="PairStatus" Classes="hint" TextWrapping="Wrap" IsVisible="False" />
+                            <Grid x:Name="PairButtons" ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Button Grid.Column="0" x:Name="SyncNowButton" Content="Sync now" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                                <Button Grid.Column="1" x:Name="ForgetPairButton" Content="Forget device" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+
                         <!-- Idle -->
                         <Grid x:Name="SyncIdlePanel" ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Button Grid.Column="0" x:Name="ShowSyncCodeButton" Content="Show code" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
